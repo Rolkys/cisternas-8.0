@@ -1,165 +1,126 @@
-﻿{{-- DOC: Proyecto Cisternas | Vista personalizada de la aplicacion. --}}
+﻿{{-- DOC: Proyecto Cisternas | Vista amigable para operarios - Sistema de Gestión de Cisternas --}}
 @extends('layouts.app')
 
 @section('content')
 
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-    <h4 class="mb-0"><i class="bi bi-list-ul"></i> Listado de Cisternas</h4>
-    <div class="d-grid gap-2" style="grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; max-width: 780px;">
-        <div class="small" style="grid-column: 1 / -1;">
-            {{ $cisternas->withQueryString()->links('pagination::bootstrap-4') }}
+{{-- ════════════════════════════ CABECERA CON ACCIONES RÁPIDAS ════════════════════════════ --}}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card-operario bg-white p-4">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h2 class="section-title mb-0">
+                        <i class="bi bi-truck"></i>
+                        Gestión de Cisternas
+                    </h2>
+                    <p class="text-muted mb-0 mt-2">
+                        <i class="bi bi-info-circle"></i>
+                        Total de cisternas: <strong>{{ $cisternas->total() }}</strong>
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        @if(auth()->user()->isRoot() || auth()->user()->isAdmin() || auth()->user()->isUser())
+                            <a href="{{ route('cisterna.create') }}" class="btn btn-operario btn-success">
+                                <i class="bi bi-plus-circle-fill"></i> Nueva Cisterna
+                            </a>
+                        @endif
+                        @if(auth()->user()->isRoot() || auth()->user()->isAdmin() || auth()->user()->isUser())
+                            <a href="{{ route('cisterna.bulk') }}" class="btn btn-operario btn-info">
+                                <i class="bi bi-file-earmark-excel-fill"></i> Importar Excel
+                            </a>
+                        @endif
+                        <a href="{{ route('cisterna.export', request()->query()) }}" class="btn btn-operario btn-primary">
+                            <i class="bi bi-download"></i> Exportar
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
-        @if(auth()->user()->isRoot() || auth()->user()->isAdmin() || auth()->user()->isUser())
-            <a href="{{ route('cisterna.bulk') }}" class="btn btn-outline-success btn-sm w-100">
-                <i class="bi bi-file-earmark-excel"></i>
-                <span class="d-none d-md-inline">Importar Excel</span>
-            </a>
-        @endif
-        @if(auth()->user()->isRoot() || auth()->user()->isAdmin() || auth()->user()->isUser())
-            <a href="{{ route('cisterna.create') }}" class="btn btn-primary btn-sm w-100">
-                <i class="bi bi-plus-lg"></i>
-                <span class="d-none d-md-inline">Nueva Cisterna</span>
-            </a>
-        @endif
-        <a href="{{ route('cisterna.export', request()->query()) }}" class="btn btn-outline-primary btn-sm w-100">
-            <i class="bi bi-download"></i>
-            <span class="d-none d-md-inline">Exportar Excel</span>
-        </a>
-        <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary btn-sm w-100">
-            <i class="bi bi-speedometer2"></i>
-            <span class="d-none d-md-inline">Dashboard</span>
-        </a>
-        <a href="{{ route('planificacion.index') }}" class="btn btn-outline-info btn-sm w-100">
-            <i class="bi bi-calendar2-week"></i>
-            <span class="d-none d-md-inline">Planificación</span>
-        </a>
-        {{-- En la sección de botones superiores, después del botón de Planificación --}}
-        @if(auth()->user()->isRoot() || auth()->user()->isAdmin())
-            <form method="POST" 
-                action="{{ route('cisterna.destroyAll') }}" 
-                class="w-100"
-                onsubmit="return confirm('¿Eliminar TODAS las cisternas? Esta acción no se puede deshacer.')">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn btn-outline-danger btn-sm w-100">
-                    <i class="bi bi-trash3"></i>
-                    <span class="d-none d-md-inline">Eliminar Todas</span>
-                </button>
-            </form>
-            {{-- TODO: Eliminar este botón después de la migración o cuando ya no sea necesario --}}
-        @endif
-        
     </div>
 </div>
 
-{{-- Filtros --}}
-<form method="GET" action="{{ route('cisterna.index') }}" class="row g-2 mb-3">
-    <div class="col-12 col-md-4">
-        <input type="text" name="texto" class="form-control"
-                placeholder="Buscar conductor, matrícula cisterna, origen..."
-                value="{{ request('texto') }}">
+{{-- ════════════════════════════ NAVEGACIÓN RÁPIDA ════════════════════════════ --}}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card-operario bg-light p-3">
+            <div class="row g-3">
+                <div class="col-md-3 col-6">
+                    <a href="{{ route('dashboard') }}" class="btn btn-operario btn-outline-primary w-100">
+                        <i class="bi bi-speedometer2"></i><br>
+                        <small>Dashboard</small>
+                    </a>
+                </div>
+                <div class="col-md-3 col-6">
+                    <a href="{{ route('planificacion.index') }}" class="btn btn-operario btn-outline-info w-100">
+                        <i class="bi bi-calendar2-week"></i><br>
+                        <small>Planificación</small>
+                    </a>
+                </div>
+                @if(auth()->user()->isAdmin())
+                    <div class="col-md-3 col-6">
+                        <a href="{{ route('admin.users') }}" class="btn btn-operario btn-outline-warning w-100">
+                            <i class="bi bi-people-fill"></i><br>
+                            <small>Usuarios</small>
+                        </a>
+                    </div>
+                @endif
+                @if(auth()->user()->isRoot() || auth()->user()->isAdmin())
+                    <div class="col-md-3 col-6">
+                        <form method="POST" action="{{ route('cisterna.destroyAll') }}" onsubmit="return confirmarAccion('¿Eliminar TODAS las cisternas? Esta acción no se puede deshacer.')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-operario btn-outline-danger w-100">
+                                <i class="bi bi-trash3-fill"></i><br>
+                                <small>Eliminar Todo</small>
+                            </button>
+                        </form>
+                    </div>
+                @endif
+            </div>
+        </div>
     </div>
-    <div class="col-12 col-md-2">
-        <input type="date" name="fecha" class="form-control"
-                value="{{ request('fecha') }}">
-    </div>
-    <div class="col-12 col-md-2">
-        <input type="number" name="year" class="form-control"
-                min="2000" max="2100" step="1" placeholder="Año ej:2026"
-                value="{{ request('year') }}">
-    </div>
-    <div class="col-12 col-md-auto d-flex gap-2">
-        <button type="submit" class="btn btn-primary flex-fill">
-            <i class="bi bi-search"></i> Filtrar
-        </button>
-        <a href="{{ route('cisterna.index') }}" class="btn btn-outline-secondary flex-fill">
-            <i class="bi bi-x-lg"></i> Limpiar
-        </a>
-    </div>
-</form>
+</div>
 
-{{-- Tabla --}}
-<div class="table-responsive">
-    <table class="table table-bordered table-hover align-middle mb-0 table-index-cisternas"
-            style="font-size: 0.82rem; white-space: nowrap;">
-        <thead>
-                <th>OF</th>
-                <th>Nº</th>
-                <th>Origen</th>
-                <th>Destino</th>
-                <th title="Matrícula Camión">Matrícula.T</th>
-                <th title="Matrícula Cisterna">Matrícula.C</th>
-                <th>Conductor</th>
-                <th>Teléfono</th>
-                <th title="Fecha Consumo MG">Fecha Consumo</th>
-                <th title="Hora estida consumo Línea 1">H.E.C L1</th>
-                <th title="Hora Real Consumo Línea 1">H.R.C L1</th>
-                <th title="Hora estida consumo Línea 2">H.E.C L2</th>
-                <th title="Hora Real Consumo Línea 2">H.R.C L2</th>
-                <th title="Food and Drug Administration">FDA</th>
-                <th title="GlobalGAP">GAP</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($cisternas as $cisterna)
-
-                @php
-                    $hoy = now()->startOfDay();
-                    $esTamarite = str_contains(strtolower((string) ($cisterna->Destino ?? '')), 'tamarite de litera');
-                    if ($esTamarite || $cisterna->HoraRealConsumoL1 || $cisterna->HoraRealConsumoL2) {
-                        $rowClass = 'row-consumida';
-                    } elseif ($cisterna->Incidencias) {
-                        $rowClass = 'row-incidencia';
-                    } elseif ($cisterna->FechaConsumoMG && $cisterna->FechaConsumoMG->isSameDay($hoy)) {
-                        $rowClass = 'row-hoy';
-                    } elseif ($cisterna->FechaConsumoMG && $cisterna->FechaConsumoMG->isAfter($hoy)) {
-                        $rowClass = 'row-futura';
-                    } else {
-                        $rowClass = 'row-pendiente';
-                    }
-                @endphp
-
-                <tr class="{{ $rowClass }}">
-                    <td>{{ $cisterna->OF }}</td>
-                    <td>{{ str_pad($cisterna->NumeroCisterna, 4, '0', STR_PAD_LEFT) }}</td>
-                    <td>{{ $cisterna->Origen ?: '—' }}</td>
-                    <td>{{ $cisterna->Destino ?: '—' }}</td>
-                    <td>{{ $cisterna->Matricula ?: '—' }}</td>
-                    <td>{{ $cisterna->MatriculaCisterna ?: '—' }}</td>
-                    <td>{{ $cisterna->Conductor }}</td>
-                    <td>{{ $cisterna->Telefono ?: '—' }}</td>
-                    <td>{{ $cisterna->FechaConsumoMG?->format('d/m/Y') ?? '—' }}</td>
-                    <td>{{ $cisterna->HoraEstimadaConsumoL1?->format('H:i') ?? '--' }}</td>
-                    <td>{{ $cisterna->HoraRealConsumoL1?->format('H:i') ?? '--' }}</td>
-                    <td>{{ $cisterna->HoraEstimadaConsumoL2?->format('H:i') ?? '--' }}</td>
-                    <td>{{ $cisterna->HoraRealConsumoL2?->format('H:i') ?? '--' }}</td>
-                    <td>
-                        @if($cisterna->FDA === true)
-                            <span class="badge bg-success">Sí</span>
-                        @elseif($cisterna->FDA === false)
-                            <span class="badge bg-danger">No</span>
-                        @else
-                            <span class="text-muted">—</span>
-                        @endif
-                    </td>
-                    <td>
-                        @if($cisterna->GlobalGAP === true)
-                            <span class="badge bg-success">Sí</span>
-                        @elseif($cisterna->GlobalGAP === false)
-                            <span class="badge bg-danger">No</span>
-                        @else
-                            <span class="text-muted">—</span>
-                        @endif
-                    </td>
-                    <td>
-                        @if($esTamarite || $cisterna->HoraRealConsumoL1 || $cisterna->HoraRealConsumoL2)
-                            <span class="badge bg-success">Consumida</span>
-                        @elseif($cisterna->Incidencias)
-                            <span class="badge bg-danger">Incidencia</span>
-                        @elseif($cisterna->FechaConsumoMG?->isSameDay($hoy))
-                            <span class="badge bg-info">Hoy</span>
+{{-- ════════════════════════════ FILTROS DE BÚSQUEDA AMIGABLES ════════════════════════════ --}}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card-operario bg-white p-4">
+            <h5 class="section-title mb-3">
+                <i class="bi bi-funnel"></i>
+                Filtros de Búsqueda
+            </h5>
+            <form method="GET" action="{{ route('cisterna.index') }}">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-search"></i> Buscar
+                        </label>
+                        <input type="text" name="texto" class="form-control form-control-lg" 
+                               placeholder="Matrícula, conductor, origen..." value="{{ request('texto') }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-calendar-date"></i> Fecha
+                        </label>
+                        <input type="date" name="fecha" class="form-control form-control-lg" 
+                               value="{{ request('fecha') }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-calendar3"></i> Año
+                        </label>
+                        <input type="number" name="year" class="form-control form-control-lg"
+                               min="2000" max="2100" placeholder="Ej: 2026" value="{{ request('year') }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">&nbsp;</label>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-operario btn-primary flex-fill">
+                                <i class="bi bi-search"></i> Buscar
+                            </button>
+                            <a href="{{ route('cisterna.index') }}" class="btn btn-operario btn-secondary flex-fill">
+                                <i class="bi bi-arrow-clockwise"></i> Limpiar
                         @else
                             <span class="badge bg-warning text-dark">Pendiente</span>
                         @endif
