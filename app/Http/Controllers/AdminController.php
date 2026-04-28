@@ -1,9 +1,11 @@
 <?php
 
 /**
- * DOC: Proyecto Cisternas
- * Archivo personalizado del dominio de negocio.
- * Contiene lógica específica de gestión de cisternas/usuarios/planificación.
+ * AdminController - Gestión de Usuarios del Sistema
+ * 
+ * Controlador dedicado a la administración completa de usuarios del sistema.
+ * Permite crear, editar, eliminar y gestionar roles y estados de usuarios.
+ * Solo accesible por usuarios con rol Root o Administrador.
  */
 
 namespace App\Http\Controllers;
@@ -17,7 +19,19 @@ use Illuminate\Validation\Rule;
 class AdminController extends Controller
 {
     /**
-     * Muestra el listado principal de registros.
+     * Email del usuario root protegido contra modificaciones.
+     */
+    private const EMAIL_ROOT_PROTEGIDO = 'root@local.es';
+    
+    /**
+     * Roles disponibles en el sistema.
+     */
+    private const ROLES_DISPONIBLES = ['Root', 'Administrador', 'Usuario', 'operario'];
+
+    /**
+     * Muestra el listado de todos los usuarios del sistema.
+     *
+     * @return \Illuminate\View\View Vista con el listado de usuarios ordenados por fecha de registro
      */
     public function index()
     {
@@ -27,46 +41,44 @@ class AdminController extends Controller
     }
 
     /**
-     * Muestra el formulario para crear un nuevo registro.
+     * Muestra el formulario para crear un nuevo usuario.
+     *
+     * @return \Illuminate\View\View Vista del formulario con roles disponibles
      */
     public function create()
     {
-        $rolesDisponibles = ['Root', 'Administrador', 'Usuario', 'operario'];
-
-        return view('admin.create', compact('rolesDisponibles'));
+        return view('admin.create', [
+            'rolesDisponibles' => self::ROLES_DISPONIBLES
+        ]);
     }
 
     /**
-     * Valida la solicitud y crea un nuevo registro.
+     * Crea un nuevo usuario en el sistema.
+     *
+     * Valida los datos del formulario, genera la contraseña determinística
+     * y crea el usuario con los datos proporcionados.
+     *
+     * @param Request $request Datos del formulario de creación
+     * @return \Illuminate\Http\RedirectResponse Redirección con mensaje de éxito o error
      */
     public function store(Request $request)
     {
         $validated = $request->validate([
             'email' => 'required|email|unique:users,email',
             'password_generada' => 'required|string|min:3',
-            'role' => ['required', Rule::in(['Root', 'Administrador', 'Usuario', 'operario'])],
+            'role' => ['required', Rule::in(self::ROLES_DISPONIBLES)],
         ]);
 
         $plainPassword = $this->generatePasswordFromEmail($validated['email']);
+        
         if ($validated['password_generada'] !== $plainPassword) {
             return back()
                 ->withErrors(['password_generada' => 'Debes generar la contraseña con el botón antes de crear.'])
                 ->withInput();
         }
 
-        User::create([
-            'name' => explode('@', $validated['email'])[0],
-            'email' => $validated['email'],
-            'password' => Hash::make($plainPassword),
-            'role' => $validated['role'],
-            'is_active' => true,
-            'fecha_registro' => now(),
-        ]);
-
-        Log::info('Usuario creado por administrador', [
-            'user_email' => $validated['email'],
-            'admin_email' => auth()->user()?->email,
-        ]);
+        $this->crearUsuario($validated['email'], $validated['role'], $plainPassword);
+        $this->logCreacionUsuario($validated['email']);
 
         return redirect()->route('admin.users')->with(
             'success',
@@ -75,11 +87,16 @@ class AdminController extends Controller
     }
 
     /**
-     * Activa o desactiva el estado de un registro.
+     * Cambia el estado de activación de un usuario.
+     *
+     * Alterna entre activado/desactivado. Protege al usuario root.
+     *
+     * @param User $user Usuario a modificar
+     * @return \Illuminate\Http\RedirectResponse Redirección con mensaje de estado
      */
     public function toggle(User $user)
     {
-        if ($user->email === 'root@local.es') {
+        if ($this->esUsuarioRootProtegido($user)) {
             return back()->with('error', 'No se puede modificar el estado del usuario root.');
         }
 
@@ -94,16 +111,22 @@ class AdminController extends Controller
     }
 
     /**
-     * Actualiza el rol asignado al usuario indicado.
+     * Actualiza el rol de un usuario específico.
+     *
+     * Permite cambiar el rol del usuario excepto si es el usuario root.
+     *
+     * @param Request $request Datos del formulario con nuevo rol
+     * @param User $user Usuario a modificar
+     * @return \Illuminate\Http\RedirectResponse Redirección con mensaje de confirmación
      */
     public function changeRole(Request $request, User $user)
     {
-        if ($user->email === 'root@local.es') {
+        if ($this->esUsuarioRootProtegido($user)) {
             return back()->with('error', 'No se puede modificar el rol del usuario root.');
         }
 
         $validated = $request->validate([
-            'role' => ['required', Rule::in(['Root', 'Administrador', 'Usuario', 'operario'])],
+            'role' => ['required', Rule::in(self::ROLES_DISPONIBLES)],
         ]);
 
         $user->role = $validated['role'];
@@ -113,11 +136,16 @@ class AdminController extends Controller
     }
 
     /**
-     * Elimina un registro del sistema.
+     * Elimina un usuario del sistema.
+     *
+     * Elimina permanentemente el usuario excepto si es el usuario root.
+     *
+     * @param User $user Usuario a eliminar
+     * @return \Illuminate\Http\RedirectResponse Redirección con mensaje de confirmación
      */
     public function destroy(User $user)
     {
-        if ($user->email === 'root@local.es') {
+        if ($this->esUsuarioRootProtegido($user)) {
             return back()->with('error', 'No se puede eliminar el usuario root.');
         }
 
@@ -128,17 +156,26 @@ class AdminController extends Controller
     }
 
     /**
-     * Muestra el formulario para editar un registro.
+     * Muestra el formulario para editar un usuario existente.
+     *
+     * @param User $user Usuario a editar
+     * @return \Illuminate\View\View Vista del formulario con datos del usuario y roles disponibles
      */
     public function edit(User $user)
     {
-        $rolesDisponibles = ['Root', 'Administrador', 'Usuario', 'operario'];
-
-        return view('admin.edit', compact('user', 'rolesDisponibles'));
+        return view('admin.edit', [
+            'user' => $user,
+            'rolesDisponibles' => self::ROLES_DISPONIBLES
+        ]);
     }
 
     /**
-     * Muestra el detalle de un registro concreto.
+     * Muestra los detalles completos de un usuario.
+     *
+     * Incluye contraseña generada y capacidades según su rol.
+     *
+     * @param User $user Usuario a visualizar
+     * @return \Illuminate\View\View Vista de detalles con información completa
      */
     public function show(User $user)
     {
@@ -149,12 +186,18 @@ class AdminController extends Controller
     }
 
     /**
-     * Valida la solicitud y actualiza un registro existente.
+     * Actualiza los datos de un usuario existente.
+     *
+     * Permite modificar rol y estado de activación.
+     *
+     * @param Request $request Datos del formulario
+     * @param User $user Usuario a actualizar
+     * @return \Illuminate\Http\RedirectResponse Redirección con mensaje de confirmación
      */
     public function update(Request $request, User $user)
     {
         $validated = $request->validate([
-            'role' => ['required', Rule::in(['Root', 'Administrador', 'Usuario', 'operario'])],
+            'role' => ['required', Rule::in(self::ROLES_DISPONIBLES)],
             'is_active' => 'nullable|boolean',
         ]);
 
@@ -162,11 +205,64 @@ class AdminController extends Controller
         $user->is_active = $request->boolean('is_active');
         $user->save();
 
-        return redirect()->route('admin.users')->with('success', "Usuario {$user->email} actualizado correctamente.");
+        return redirect()->route('admin.users')
+            ->with('success', "Usuario {$user->email} actualizado correctamente.");
+    }
+
+    // ==================== MÉTODOS PRIVADOS AUXILIARES ====================
+
+    /**
+     * Verifica si el usuario es el root protegido.
+     *
+     * @param User $user Usuario a verificar
+     * @return bool True si es el usuario root protegido
+     */
+    private function esUsuarioRootProtegido(User $user): bool
+    {
+        return $user->email === self::EMAIL_ROOT_PROTEGIDO;
+    }
+
+    /**
+     * Crea un nuevo usuario con los datos proporcionados.
+     *
+     * @param string $email Email del usuario
+     * @param string $role Rol asignado
+     * @param string $password Contraseña en texto plano
+     * @return User Usuario creado
+     */
+    private function crearUsuario(string $email, string $role, string $password): User
+    {
+        return User::create([
+            'name' => explode('@', $email)[0],
+            'email' => $email,
+            'password' => Hash::make($password),
+            'role' => $role,
+            'is_active' => true,
+            'fecha_registro' => now(),
+        ]);
+    }
+
+    /**
+     * Registra en el log la creación de un usuario.
+     *
+     * @param string $userEmail Email del usuario creado
+     */
+    private function logCreacionUsuario(string $userEmail): void
+    {
+        Log::info('Usuario creado por administrador', [
+            'user_email' => $userEmail,
+            'admin_email' => auth()->user()?->email,
+        ]);
     }
 
     /**
      * Genera una contraseña determinística a partir del email.
+     *
+     * Algoritmo: parte_local_en_mayúsculas + primer_carácter_ascii + último_carácter_ascii
+     *
+     * @param string $email Email del usuario
+     * @return string Contraseña generada
+     * @throws \InvalidArgumentException Si el email no es válido
      */
     private function generatePasswordFromEmail(string $email): string
     {
@@ -183,7 +279,10 @@ class AdminController extends Controller
     }
 
     /**
-     * Devuelve los permisos visibles asociados a un rol.
+     * Obtiene la descripción de capacidades según el rol.
+     *
+     * @param string $role Rol del usuario
+     * @return array<string> Lista de capacidades descriptivas
      */
     private function getRoleCapabilities(string $role): array
     {

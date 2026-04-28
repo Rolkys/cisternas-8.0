@@ -1,10 +1,16 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "cisternas/gestion",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
+    "description": "Sistema de gestión de cisternas con importación/exportación Excel y control de usuarios",
+    "keywords": ["laravel", "cisternas", "excel", "gestion", "phpspreadsheet"],
     "license": "MIT",
+    "authors": [
+        {
+            "name": "Developer",
+            "email": "dev@cisternas.local"
+        }
+    ],
     "require": {
         "php": "^8.2",
         "doctrine/dbal": "^4.4",
@@ -47,9 +53,35 @@
             "Composer\\Config::disableProcessTimeout",
             "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1 --timeout=0\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite --kill-others"
         ],
+        "dev-simple": [
+            "Composer\\Config::disableProcessTimeout",
+            "npx concurrently -c \"#93c5fd,#fdba74\" \"php artisan serve\" \"npm run dev\" --names=server,vite --kill-others"
+        ],
         "test": [
             "@php artisan config:clear --ansi",
             "@php artisan test"
+        ],
+        "test-coverage": [
+            "@php artisan config:clear --ansi",
+            "XDEBUG_MODE=coverage @php artisan test --coverage-html coverage"
+        ],
+        "lint": [
+            "@php artisan pint"
+        ],
+        "lint-fix": [
+            "@php artisan pint --dirty"
+        ],
+        "clear": [
+            "@php artisan config:clear",
+            "@php artisan cache:clear",
+            "@php artisan route:clear",
+            "@php artisan view:clear"
+        ],
+        "optimize": [
+            "@php artisan config:cache",
+            "@php artisan route:cache",
+            "@php artisan view:cache",
+            "@php artisan optimize"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
@@ -73,6 +105,9 @@
     "extra": {
         "laravel": {
             "dont-discover": []
+        },
+        "branch-alias": {
+            "dev-main": "8.0-dev"
         }
     },
     "config": {
