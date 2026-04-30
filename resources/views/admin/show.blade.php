@@ -42,15 +42,6 @@
     </div>
 </div>
 
-<script>
-const pwdInput = document.getElementById('generated_password');
-const btnTogglePwd = document.getElementById('btn-toggle-password');
-
-btnTogglePwd.addEventListener('click', function () {
-    pwdInput.type = pwdInput.type === 'password' ? 'text' : 'password';
-    btnTogglePwd.textContent = pwdInput.type === 'password' ? 'Ver' : 'Ocultar';
-});
-</script>
 @endsection
 
 

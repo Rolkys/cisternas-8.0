@@ -310,36 +310,4 @@
 </div>
 
 {{-- FIX #4: Función abrirModal definida e implementada --}}
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        document.querySelectorAll('.btn-consumo').forEach(function(btn){
-            btn.addEventListener('click', function (){
-                abrirModal(
-                    this.dataset.id,
-                    this.dataset.hecL1,
-                    this.dataset.hrcL1,
-                    this.dataset.hecL2,
-                    this.dataset.hrcL2
-                );
-            });
-        });
-    });
-
-    function abrirModal(id, hecL1, hrcL1, hecL2, hrcL2) {
-        // Apuntar el form a la ruta correcta de consumo
-        document.getElementById('form-consumo').action = '/cisternas/' + id + '/consumo';
-
-        // Rellenar campos de referencia (hora estimada)
-        document.getElementById('info-hec-l1').value = hecL1 || '';
-        document.getElementById('info-hec-l2').value = hecL2 || '';
-
-        // Rellenar campos editables (hora real)
-        document.getElementById('hrc-l1').value = hrcL1 || '';
-        document.getElementById('hrc-l2').value = hrcL2 || '';
-
-        // Abrir el modal de Bootstrap
-        var modal = new bootstrap.Modal(document.getElementById('modalConsumo'));
-        modal.show();
-    }
-</script>
 @endsection

@@ -61,53 +61,5 @@
     </div>
 </div>
 
-<script>
-function generarPasswordDesdeEmail(email) {
-    const local = (email || '').split('@')[0] || '';
-    if (!local) return '';
-
-    const upper = local.toUpperCase();
-    const firstAscii = upper.charCodeAt(0);
-    const lastAscii = upper.charCodeAt(upper.length - 1);
-
-    return `${upper}${firstAscii}${lastAscii}`;
-}
-
-const emailInput = document.querySelector('input[name="email"]');
-const passwordInput = document.getElementById('password_generada');
-const btnGenerar = document.getElementById('btn-generar-pwd');
-const btnToggle = document.getElementById('btn-toggle-pwd');
-const btnCrear = document.getElementById('btn-crear');
-
-btnGenerar.addEventListener('click', function () {
-    const pass = generarPasswordDesdeEmail(emailInput.value.trim());
-    if (!pass) {
-        alert('Introduce un email válido antes de generar la contraseña.');
-        return;
-    }
-
-    passwordInput.value = pass;
-    passwordInput.type = 'text';
-    btnToggle.textContent = 'Ocultar';
-    btnCrear.disabled = false;
-});
-
-btnToggle.addEventListener('click', function () {
-    if (!passwordInput.value) return;
-    passwordInput.type = passwordInput.type === 'password' ? 'text' : 'password';
-    btnToggle.textContent = passwordInput.type === 'password' ? 'Ver' : 'Ocultar';
-});
-
-emailInput.addEventListener('input', function () {
-    passwordInput.value = '';
-    passwordInput.type = 'password';
-    btnToggle.textContent = 'Ver';
-    btnCrear.disabled = true;
-});
-
-if (passwordInput.value) {
-    btnCrear.disabled = false;
-}
-</script>
 @endsection
 

@@ -4,21 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Control de Cisternas</title>
-        <script>
-            (function (){
-                try{
-                    var theme = localStorage.getItem('app-theme');
-                    var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                    var isDark = theme === 'dark' || (!theme && prefersDark);
-                    if (isDark) {
-                        document.documentElement.classList.add('dark');
-                    }
-                }catch(e){
-                    console.error(e);
-                }
-            })();
-        </script>
-        {{-- Bootstrap CSS --}}
+                {{-- Bootstrap CSS --}}
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
         {{-- Bootstrap Icons --}}
@@ -53,7 +39,7 @@
                             </a>
                         @endif
 
-                        <a href="{{ rounte('login') }}"
+                        <a href="{{ route('logout') }}"
                             class="btn btn-outline-light btn-lg"
                             onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                             <i class="bi bi-box-arrow-right"><span>Salir</span></i>

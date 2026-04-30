@@ -271,47 +271,4 @@
 </div>
 @endif
 
-<script>
-function toggleTodos(checked) {
-    document.querySelectorAll('.check-fila').forEach((checkbox) => {
-        checkbox.checked = !!checked;
-    });
-}
-
-function collectRowsData() {
-    const rows = {};
-    const fields = document.querySelectorAll('#bulk-edit-form input[name^="filas["], #bulk-edit-form textarea[name^="filas["], #bulk-edit-form select[name^="filas["]');
-
-    fields.forEach((el) => {
-        const match = el.name.match(/^filas\[(\d+)\]\[([^\]]+)\]$/);
-        if (!match) return;
-
-        const index = match[1];
-        const key = match[2];
-
-        if (!rows[index]) rows[index] = {};
-
-        if (el.type === 'checkbox') {
-            rows[index][key] = el.checked ? '1' : '';
-        } else {
-            rows[index][key] = el.value;
-        }
-    });
-
-    return rows;
-}
-
-function submitImportAll() {
-    const hidden = document.getElementById('edited_rows_json_all');
-    hidden.value = JSON.stringify(collectRowsData());
-    document.getElementById('import-all-form').submit();
-}
-
-document.getElementById('bulk-edit-form')?.addEventListener('submit', function () {
-    const hidden = document.getElementById('edited_rows_json_selected');
-    if (hidden) {
-        hidden.value = JSON.stringify(collectRowsData());
-    }
-});
-</script>
 @endsection
