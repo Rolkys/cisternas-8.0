@@ -213,7 +213,7 @@ class CisternaController extends Controller
                 'GlobalGAP'      => 'nullable|boolean',
                 'FDA'            => 'nullable|boolean',
             ]);
-
+    
             $data = $request->all();
             $data = $this->syncFechasConsumoEntrada($data);
             $data = $this->autoConsumir($data, $cisterna);
@@ -649,10 +649,10 @@ class CisternaController extends Controller
         $recientes      = Cisterna::orderByDesc('IdCisterna')->take(5)->get();
 
         $hoy_cisternas  = Cisterna::whereDate('FechaConsumoMG', today())
-                                    ->orderBy('HoraEstimaadConsumoL1')
+                                    ->orderBy('HoraEstimadaConsumoL1')
                                     ->get();
 
-        $años = Cisterna::selectRaw('strftime("%Y", COALESCE(FechaConsumoMG, created_at)) as ano')
+        $años = Cisterna::selectRaw('YEAR(COALESCE(FechaConsumoMG, created_at)) as ano')
                         ->groupBy('ano')
                         ->orderByDesc('ano')
                         ->pluck('ano');
@@ -734,7 +734,7 @@ class CisternaController extends Controller
             abort(403, 'No autorizado');
         }
         
-        \App\Models\Cisterna::truncate();
+        Cisterna::truncate();
         
         return redirect()->route('cisterna.index')
             ->with('success', 'Todas las cisternas han sido eliminadas correctamente.');

@@ -51,6 +51,13 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    protected $dateFormat = 'Ymd H:i:s';
+
+    public function freshTimestamp()
+    {
+        return now()->format('Ymd H:i:s');
+    }
+
     /**
      * Conversiones automaticas de tipos de datos.
      *
