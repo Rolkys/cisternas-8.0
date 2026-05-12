@@ -22,7 +22,7 @@
     {{-- Grid de botones con columnas de ancho fijo --}}
     <div class="d-grid gap-2" style="grid-template-columns: repeat(3, 1fr); max-width: 700px;">
             {{-- IMPORTAR EXCEL --}}
-            @if(auth()->user()->isRoot() || auth()->user()->isAdmin())
+            @if(auth()->user()->isRoot() || auth()->user()->isAdmin() || auth()->user()->isUser())
                 <a href="{{ route('cisterna.bulk') }}" class="btn btn-outline-success w-100 btn-grid">
                     <i class="bi bi-box-arrow-down-left"></i>
                     <span class="d-none d-md-inline ms-1">Importar Excel</span>
@@ -30,7 +30,7 @@
             @endif
             
             {{-- CREAR UNA CISTERNA COMPRADA --}}
-            @if(auth()->user()->isRoot() || auth()->user()->isAdmin())
+            @if(auth()->user()->isRoot() || auth()->user()->isAdmin() || auth()->user()->isUser())
                 <a href="{{ route('cisterna.create') }}" class="btn btn-outline-warning w-100 btn-grid">
                     <i class="bi bi-plus-lg"></i>
                     <span class="d-none d-md-inline ms-1">Cisterna Comprada</span>
@@ -46,23 +46,27 @@
             @endif
 
             {{-- DASHBOARD --}}
-            <a href="{{ route('dashboard') }}"
-                        class="btn btn-dashboard w-100 btn-grid">
-                        <i class="bi bi-speedometer2"></i>
-                        <span class="d-none d-md-inline ms-1">Dashboard</span>
-            </a>
+            @if(auth()->user()->isRoot() || auth()->user()->isAdmin())
+                <a href="{{ route('dashboard') }}"
+                            class="btn btn-dashboard w-100 btn-grid">
+                            <i class="bi bi-speedometer2"></i>
+                            <span class="d-none d-md-inline ms-1">Dashboard</span>
+                </a>
+            @endif
 
-            <a href="{{ route('planificacion.index') }}" class="btn btn-outline-info w-100 btn-grid">
-                <i class="bi bi-calendar2-week"></i>
-                <span class="d-none d-md-inline ms-1">Planificación</span>
-            </a>
+            {{-- PLANIFICACIÓN --}}
+            @if(auth()->user()->isRoot() || auth()->user()->isAdmin())
+                <a href="{{ route('planificacion.index') }}" class="btn btn-outline-info w-100 btn-grid">
+                    <i class="bi bi-calendar2-week"></i>
+                    <span class="d-none d-md-inline ms-1">Planificación</span>
+                </a>
+            @endif
 
     </div>
 
 </div>
 
 {{-- Filtros --}}
-{{-- FIX #1: Corregido typo 'cisterba.index' → 'cisterna.index' --}}
 <form method="GET" action="{{ route('cisterna.index') }}" class="row g-2 mb-3">
     <div class="col-12 col-md-4">
         <input type="text" name="texto" class="form-control"
@@ -149,7 +153,6 @@
                     <td>{{ $cisterna->HoraEstimadaConsumoL2 ? $cisterna->HoraEstimadaConsumoL2->format('H:i'): '--' }}</td>
                     <td>{{ $cisterna->HoraRealConsumoL2 ? $cisterna->HoraRealConsumoL2->format('H:i'): '--' }}</td>
                     
-                    {{-- FIX #3: Añadido @break en cada @case de FDA --}}
                     <td>
                         @switch($cisterna->FDA)
                             @case(true)
@@ -163,7 +166,7 @@
                         @endswitch
                     </td>
                     
-                    {{-- FIX #3: Añadido @break en cada @case de GlobalGAP --}}
+
                     <td>
                         @switch($cisterna->GlobalGAP)
                             @case(true)
@@ -311,3 +314,74 @@
 
 {{-- FIX #4: Función abrirModal definida e implementada --}}
 @endsection
+
+{{-- Script inline para modal de consumo --}}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('>>> Script inline cargado');
+    
+    // Manejar clicks en botones de consumo
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.btn-consumo');
+        if (!btn) return;
+        
+        console.log('>>> Botón consumo clickeado (inline):', btn.dataset);
+        
+        // Obtener datos del botón
+        const id = btn.dataset.id;
+        const hecL1 = btn.dataset.hecL1 || btn.dataset.hecl1 || '';
+        const hrcL1 = btn.dataset.hrcL1 || btn.dataset.hrcl1 || '';
+        const hecL2 = btn.dataset.hecL2 || btn.dataset.hecl2 || '';
+        const hrcL2 = btn.dataset.hrcL2 || btn.dataset.hrcl2 || '';
+        
+        console.log('>>> Datos extraídos:', {id, hecL1, hrcL1, hecL2, hrcL2});
+        
+        // Configurar formulario
+        const form = document.getElementById('form-consumo');
+        const l1 = document.getElementById('hrc-l1');
+        const l2 = document.getElementById('hrc-l2');
+        
+        if (!form) {
+            console.error('ERROR: No existe #form-consumo');
+            alert('Error: No se encontró el formulario de consumo');
+            return;
+        }
+        
+        form.action = '/cisterna/' + id + '/consumo';
+        
+        // Rellenar campos
+        const infoL1 = document.getElementById('info-hec-l1');
+        const infoL2 = document.getElementById('info-hec-l2');
+        if (infoL1) infoL1.value = hecL1;
+        if (infoL2) infoL2.value = hecL2;
+        if (l1) l1.value = hrcL1;
+        if (l2) l2.value = hrcL2;
+        
+        // Habilitar/deshabilitar campos
+        if (l1) l1.disabled = false;
+        if (l2) l2.disabled = false;
+        if (hrcL1 && l2) l2.disabled = true;
+        else if (hrcL2 && l1) l1.disabled = true;
+        
+        // Abrir modal
+        const modalRoot = document.getElementById('modalConsumo');
+        if (!modalRoot) {
+            console.error('ERROR: No existe #modalConsumo');
+            alert('Error: No se encontró el modal de consumo');
+            return;
+        }
+        
+        console.log('>>> Abriendo modal (inline)...');
+        
+        if (typeof bootstrap !== 'undefined') {
+            const modal = new bootstrap.Modal(modalRoot);
+            modal.show();
+        } else {
+            // Fallback si Bootstrap no está disponible
+            modalRoot.style.display = 'block';
+            modalRoot.classList.add('show');
+            document.body.classList.add('modal-open');
+        }
+    });
+});
+</script>

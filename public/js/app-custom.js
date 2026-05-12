@@ -56,16 +56,27 @@ window.abrirModal = function(id, hecL1, hrcL1, hecL2, hrcL2) {
  DELEGACIÓN GLOBAL — FASE DE CAPTURA (prioridad máxima)
 ============================================================ */
 
-document.addEventListener('pointerdown', function(e) {
+document.addEventListener('click', function(e) {
     const btn = e.target.closest('.btn-consumo');
     if (!btn) return;
     
+    console.log('>>> Botón consumo clickeado:', btn.dataset);
+    console.log('>>> Bootstrap disponible:', typeof bootstrap !== 'undefined');
+    console.log('>>> Modal en DOM:', !!document.getElementById('modalConsumo'));
+    
+    // Verificar que Bootstrap esté cargado
+    if (typeof bootstrap === 'undefined') {
+        console.error('ERROR: Bootstrap no está cargado');
+        alert('Error: Bootstrap no está cargado. Recarga la página.');
+        return;
+    }
+    
     abrirModal(
         btn.dataset.id,
-        btn.dataset.hecL1,
-        btn.dataset.hrcL1,
-        btn.dataset.hecL2,
-        btn.dataset.hrcL2
+        btn.dataset.hecL1 || btn.dataset.hecl1,
+        btn.dataset.hrcL1 || btn.dataset.hrcl1,
+        btn.dataset.hecL2 || btn.dataset.hecl2,
+        btn.dataset.hrcL2 || btn.dataset.hrcl2
     );
 });
 
