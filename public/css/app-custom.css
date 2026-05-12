@@ -74,11 +74,21 @@ body.dark-mode {
 
     --color-secondary: #2f3437;
     --color-secondary-hover: #3b4145;
+
+    --row-consumida: #adebb3;
+    --row-incidencia: #FF746C;
+    --row-hoy: #90D5FF;
+    --row-futura: #FFEE8C;
+    --row-pendiente: #e9ecef;
 }
 
 body {
     background: var(--mg-bg);
     color: var(--color-text);
+}
+
+body.dark-mode {
+    background-color: #121212 !important;
 }
 
 html, body {
@@ -269,6 +279,23 @@ body.dark-mode .btn-close {
 .btn-outline-danger:active {
     background-color: var(--color-danger-active) !important;
     border-color: var(--color-danger-active) !important;
+    color: #ffffff !important;
+}
+
+/* BOTON DASHBOARD */
+.btn-dashboard {
+    color: #8e44ad !important;
+    border-color: #8e44ad !important;
+    background-color: transparent !important;
+}
+.btn-dashboard:hover {
+    background-color: #8e44ad !important;
+    border-color: #8e44ad !important;
+    color: #ffffff !important;
+}
+.btn-dashboard:active {
+    background-color: #71368a !important;
+    border-color: #71368a !important;
     color: #ffffff !important;
 }
 
@@ -539,19 +566,21 @@ body.login-page {
     color: var(--color-text-muted);
 }
 
-/* INDEX: tabla siempre negra, sin cambio al hover */
-body.dark-mode .table-index-cisternas > :not(caption) > * > * {
+/* INDEX: fondo negro en dark mode para filas sin clase */
+body.dark-mode .table-index-cisternas > tbody > tr:not(.row-consumida):not(.row-incidencia):not(.row-hoy):not(.row-futura):not(.row-pendiente) > td {
     background-color: #121212 !important;
     color: #ecf0f1 !important;
     border-color: #2b2b2b !important;
-    --bs-table-bg: #121212 !important;
-    --bs-table-accent-bg: #121212 !important;
-    --bs-table-hover-bg: #121212 !important;
-    --bs-table-striped-bg: #121212 !important;
+}
+body.dark-mode .table-index-cisternas > thead > tr > th {
+    background-color: #121212 !important;
+    color: #ecf0f1 !important;
+    border-color: #2b2b2b !important;
 }
 
-body.dark-mode .table-index-cisternas.table-hover > tbody > tr:hover > * {
-    background-color: #121212 !important;
-    box-shadow: inset 0 0 0 9999px #121212 !important;
-    --bs-table-accent-bg: #121212 !important;
-}
+/* INDEX: colores de filas en dark mode - iguales al modo claro */
+body.dark-mode .table-index-cisternas > tbody > tr.row-consumida > td { background-color: #adebb3 !important; color: #121212 !important; }
+body.dark-mode .table-index-cisternas > tbody > tr.row-incidencia > td { background-color: #FF746C !important; color: #121212 !important; }
+body.dark-mode .table-index-cisternas > tbody > tr.row-hoy > td { background-color: #90D5FF !important; color: #121212 !important; }
+body.dark-mode .table-index-cisternas > tbody > tr.row-futura > td { background-color: #FFEE8C !important; color: #121212 !important; }
+body.dark-mode .table-index-cisternas > tbody > tr.row-pendiente > td { background-color: #e9ecef !important; color: #121212 !important; }

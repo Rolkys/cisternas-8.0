@@ -170,20 +170,20 @@ class CisternaController extends Controller
         // Root y Admin pueden editar todo
         if ($user->isRoot() || $user->isAdmin()) {
             $request->validate([
-                'OF'             => 'required|integer',
-                'NumeroCisterna' => 'required|integer',
-                'Conductor'      => 'required|string|max:255',
-                'Origen'         => 'nullable|string|max:255',
-                'Destino'        => 'nullable|string|max:255',
-                'Matricula'      => 'nullable|string|max:50',
-                'MatriculaCisterna' => 'nullable|string|max:50',
-                'Telefono'       => 'nullable|string|max:20',
-                'Transporte'     => 'nullable|string|max:255',
-                'FechaConsumoMG' => 'nullable|date',
-                'Observaciones'  => 'nullable|string',
-                'Incidencias'    => 'nullable|string',
-                'GlobalGAP'      => 'nullable|boolean',
-                'FDA'            => 'nullable|boolean',
+                'OF'                     => 'required|integer',
+                'NumeroCisterna'         => 'required|integer',
+                'Conductor'              => 'required|string|max:255',
+                'Origen'                 => 'nullable|string|max:255',
+                'Destino'                => 'nullable|string|max:255',
+                'Matricula'              => 'nullable|string|max:50',
+                'MatriculaCisterna'      => 'nullable|string|max:50',
+                'Telefono'               => 'nullable|string|max:20',
+                'Transporte'             => 'nullable|string|max:255',
+                'FechaConsumoMG'         => 'nullable|date',
+                'Observaciones'          => 'nullable|string',
+                'Incidencias'            => 'nullable|string',
+                'GlobalGAP'              => 'nullable|boolean',
+                'FDA'                   => 'nullable|boolean',
             ]);
 
             $data = $request->all();
@@ -198,20 +198,20 @@ class CisternaController extends Controller
         // User puede editar todos los campos
         if ($user->isUser()) {
             $request->validate([
-                'OF'             => 'required|integer',
-                'NumeroCisterna' => 'required|integer',
-                'Conductor'      => 'required|string|max:255',
-                'Origen'         => 'nullable|string|max:255',
-                'Destino'        => 'nullable|string|max:255',
-                'Matricula'      => 'nullable|string|max:50',
-                'MatriculaCisterna' => 'nullable|string|max:50',
-                'Telefono'       => 'nullable|string|max:20',
-                'Transporte'     => 'nullable|string|max:255',
-                'FechaConsumoMG' => 'nullable|date',
-                'Observaciones'  => 'nullable|string',
-                'Incidencias'    => 'nullable|string',
-                'GlobalGAP'      => 'nullable|boolean',
-                'FDA'            => 'nullable|boolean',
+                'OF'                     => 'required|integer',
+                'NumeroCisterna'         => 'required|integer',
+                'Conductor'              => 'required|string|max:255',
+                'Origen'                 => 'nullable|string|max:255',
+                'Destino'                => 'nullable|string|max:255',
+                'Matricula'              => 'nullable|string|max:50',
+                'MatriculaCisterna'      => 'nullable|string|max:50',
+                'Telefono'               => 'nullable|string|max:20',
+                'Transporte'             => 'nullable|string|max:255',
+                'FechaConsumoMG'         => 'nullable|date',
+                'Observaciones'          => 'nullable|string',
+                'Incidencias'            => 'nullable|string',
+                'GlobalGAP'              => 'nullable|boolean',
+                'FDA'                    => 'nullable|boolean',
             ]);
     
             $data = $request->all();
@@ -653,9 +653,9 @@ class CisternaController extends Controller
                                     ->get();
 
         $años = Cisterna::selectRaw('YEAR(COALESCE(FechaConsumoMG, created_at)) as ano')
-                        ->groupBy('ano')
-                        ->orderByDesc('ano')
-                        ->pluck('ano');
+                ->groupByRaw('YEAR(COALESCE(FechaConsumoMG, created_at))')
+                ->orderByRaw('YEAR(COALESCE(FechaConsumoMG, created_at)) DESC')
+                ->pluck('ano');
 
         $añoSeleccionado = $request->año;
         $cisternasDelAño = collect();

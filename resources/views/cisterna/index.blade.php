@@ -244,11 +244,11 @@
 
 {{-- Leyenda de colores --}}
 <div>
-    <span><span class="leyend-box" style="background:var(--row-consumida)"></span>Consumida</span>
-    <span><span class="leyend-box" style="background:var(--row-incidencia)"></span>Incidencia</span>
-    <span><span class="leyend-box" style="background:var(--row-hoy)"></span>Hoy</span>
-    <span><span class="leyend-box" style="background:var(--row-futura)"></span>Futura</span>
-    <span><span class="leyend-box" style="background:var(--row-pendiente)"></span>Pendiente</span>
+    <span><span class="legend-box" style="background:var(--row-consumida)"></span>Consumida</span>
+    <span><span class="legend-box" style="background:var(--row-incidencia)"></span>Incidencia</span>
+    <span><span class="legend-box" style="background:var(--row-hoy)"></span>Hoy</span>
+    <span><span class="legend-box" style="background:var(--row-futura)"></span>Futura</span>
+    <span><span class="legend-box" style="background:var(--row-pendiente)"></span>Pendiente</span>
 </div>
 
 {{-- Modal consumo --}}

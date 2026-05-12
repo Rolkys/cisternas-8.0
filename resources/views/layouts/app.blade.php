@@ -1,84 +1,98 @@
 <!DOCTYPE html>
 <html lang="es">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Control de Cisternas</title>
-                {{-- Bootstrap CSS --}}
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Cisternas</title>
+    <script>
+        (function () {
+            try {
+                var theme = localStorage.getItem('app-theme');
+                var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                var isDark = theme === 'dark' || (!theme && prefersDark);
+                if (isDark) {
+                    document.documentElement.classList.add('dark-mode');
+                }
+            } catch (e) {}
+        })();
+    </script>
 
-        {{-- Bootstrap Icons --}}
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    {{-- Bootstrap CSS --}}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    {{-- Bootstrap Icons --}}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    {{-- Estilos propios --}}
+    <link href="{{ asset('css/app-custom.css') }}" rel="stylesheet">
+</head>
+<body class="min-vh-100" style="background: white;">
 
-        {{-- Estilos propios --}}
-        <link rel="stylesheet" href="{{ asset('css/app.css') }}">
-    </head>
-    <body class="min-vh-100" style="background: white;">
     {{-- ════════════════════════════ NAVBAR ════════════════════════════ --}}
-        <nav class="navbar navbar-expand-lg navbar-dark shadow" style="position: fixed; top: ; left: 0; right: 0; z-index: 1060; width: 100vw; background-color: #e10734 !important; min-height: 72px;">
-            <div class="container-fluid px-3">
-                <a class="navbar-brand fw-bold d-flex align-items-center gap-2" 
-                    href="{{ route('cisterna.index') }}"
-                    style="font-size: 1.3rem;">
-                    <img src="{{ asset('images/logo.png') }}" alt="Logo" style="height: 44px;">
-                    <span>Control de Cisternas</span>
-                </a>
+    <nav class="navbar navbar-expand-lg navbar-dark shadow" style="position: fixed; top: 0; left: 0; right: 0; z-index: 1060; width: 100vw; background-color: #e10734 !important; min-height: 72px;">
+        <div class="container-fluid px-3">
+            <a class="navbar-brand fw-bold d-flex align-items-center gap-2"
+                href="{{ route('cisterna.index') }}"
+                style="font-size: 1.3rem;">
+                <img src="{{ asset('images/anagrama.png') }}" alt="MG" height="44">
+                <span>Control Cisternas</span>
+            </a>
 
-                <div class="ms-auto d-flex align-items-center gap-2 flex-wrap" style="height: 100%;">
-                    <button type="button" id="theme-toggle" class="btn btn-sm btn-ghost text-white btn-theme-toggle" aria-label="Cambiar tema" style="font-size: 1.2rem; width: 44px; height: 44px;">
-                        <i id="theme-toggle-icon" class="bi bi-moon-stars-fill"></i>
-                    </button>
+            <div class="ms-auto d-flex align-items-center gap-2 flex-wrap" style="height: 100%;">
+                <button type="button" id="theme-toggle" class="btn btn-sm btn-ghost text-white btn-theme-toggle" aria-label="Cambiar tema" style="font-size: 1.2rem; width: 44px; height: 44px;">
+                    <i id="theme-toggle-icon" class="bi bi-moon-stars-fill"></i>
+                </button>
 
-                    @auth
-                        <span class="text-white fw-semibold" style="font-size: 1rem;">{{ auth()->user()->email }}</span>
-                        <span class="badge fs-6 px-3 py-2"style="background-color: rgba(0,0,0,0.3);">{{ auth()->user()->role }}</span>
-                
-                        @if (auth()->user()->isRoot() || auth()->user()->isAdmin())
-                            <a href="{{ route('admin.user') }}" class="btn btn-outline-light btn-lg" style="font-size: 1rem; padding: 0.5rem 1rem;">
-                                <i class="bi bi-people"></i> <span class="d-none d-md-inline">Usuarios</span> 
-                            </a>
-                        @endif
+                @auth
+                    <span class="text-white fw-semibold" style="font-size: 1rem;">{{ auth()->user()->email }}</span>
+                    <span class="badge fs-6 px-3 py-2" style="background-color: rgba(0,0,0,0.3);">{{ auth()->user()->role }}</span>
 
-                        <a href="{{ route('logout') }}"
-                            class="btn btn-outline-light btn-lg"
-                            onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                            <i class="bi bi-box-arrow-right"><span>Salir</span></i>
+                    @if(auth()->user()->isRoot() || auth()->user()->isAdmin())
+                        <a href="{{ route('admin.users') }}" class="btn btn-outline-light btn-lg" style="font-size: 1rem; padding: 0.5rem 1rem;">
+                            <i class="bi bi-people"></i> <span class="d-none d-md-inline">Usuarios</span>
                         </a>
+                    @endif
 
-                        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                            @csrf
-                        </form>
-                    @endauth
-                </div>
+                    <a href="{{ route('login') }}"
+                        class="btn btn-outline-light btn-lg"
+                        style="font-size: 1rem; padding: 0.5rem 1rem;"
+                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                        <i class="bi bi-box-arrow-right"></i> <span class="d-none d-md-inline">Salir</span>
+                    </a>
+
+                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                        @csrf
+                    </form>
+                @endauth
             </div>
-        </nav>
-    
-        {{-- Espacio para el navbar fijo --}}
-        <div class="container-fluid" style="padding-top: 80px;"></div>   
-
-        {{-- ════════════════════════ NOTIFICACIONES ════════════════════════ --}}
-        <div>
-            @if (session('success'))
-                <div class="alert alert-success alert-dimissible fade show" role="alert">
-                    {{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dimiss="alert"></button>
-                </div>
-            @endif
-            @if (session('error'))
-                <div class="alert alert-danger alert-dimissible fade show" role="alert">
-                    {{ session('error') }}
-                    <button type="button" class="btn-close" data-bs-dimiss="alert"></button>
-                </div>
-            @endif
         </div>
-        {{-- ══════════════════════════ CONTENIDO ════════════════════════════ --}}
-        <main class="container-fluid py-3" style="margin: 0; padding: 0;">
-            @yield('content')
-        </main>
+    </nav>
 
-        {{-- Bootstrap JS --}}
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-        {{-- JS propio --}}
-        <script src="{{ asset('js/app.js') }}"></script>
-    </body>
+    {{-- Espacio para el navbar fijo --}}
+    <div class="container-fluid" style="padding-top: 80px;"></div>
+
+    {{-- ════════════════════════ NOTIFICACIONES ════════════════════════ --}}
+    <div class="container-fluid px-4">
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+        @if(session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+    </div>
+
+    {{-- ══════════════════════════ CONTENIDO ════════════════════════════ --}}
+    <main class="container-fluid py-3" style="margin: 0; padding-left: 1.5rem; padding-right: 1.5rem;">
+        @yield('content')
+    </main>
+
+    {{-- Bootstrap JS --}}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {{-- JS propio --}}
+    <script src="{{ asset('js/app-custom.js') }}"></script>
+</body>
 </html>
