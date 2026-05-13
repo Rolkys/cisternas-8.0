@@ -312,17 +312,17 @@ class ExcelImportService
 
         // Numeros de serie Excel
         if (is_numeric($value)) {
-            return Date::excelToDateTimeObject((float) $value)->format('Y-m-d H:i:s');
+            return Date::excelToDateTimeObject((float) $value)->format('Ymd H:i:s');
         }
 
         // Objetos DateTime
         if ($value instanceof \DateTime) {
-            return $value->format('Y-m-d H:i:s');
+            return $value->format('Ymd H:i:s');
         }
 
         // Intentar parsear como cadena
         try {
-            return (new \DateTime((string) $value))->format('Y-m-d H:i:s');
+            return (new \DateTime((string) $value))->format('Ymd H:i:s');
         } catch (\Exception $e) {
             return null;
         }
@@ -368,7 +368,7 @@ class ExcelImportService
             }
         }
 
-        return $date->format('Y-m-d H:i:s');
+        return $date->format('Ymd H:i:s');
     }
 }
 

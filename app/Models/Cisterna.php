@@ -24,6 +24,11 @@ class Cisterna extends Model
     protected $primaryKey = 'IdCisterna';
 
     /**
+     * Formato de fechas para SQL Server.
+     */
+    protected $dateFormat = 'Ymd H:i:s';
+
+    /**
      * Campos asignables en asignacion masiva.
      * 
      * Organizados por categoria:

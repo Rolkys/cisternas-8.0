@@ -82,7 +82,34 @@ class CisternaController extends Controller
             });
         }
 
-        $cisternas = $query->orderByDesc('numeroCisterna')->paginate(30);
+       // Ordenamiento por columna
+        
+       $columnasPermitidas = [
+        'OF'                => 'OF',
+        'NumeroCisterna'    => 'NumeroCisterna',
+        'Origen'            => 'Origen',
+        'Destino'           => 'Destino',
+        'Conductor'         => 'Conductor',
+        'FechaConsumoMG'    => 'FechaConsumoMG'
+       ]; 
+
+       // Paginacion
+        $page = request()->get('page', 1);
+        $perPage = 30;
+        $total = (clone $query)->count();
+        $allIds = (clone $query)->orderByDesc('NumeroCisterna')->pluck('IdCisterna');
+        $pageIds = $allIds->forPage($page, $perPage);
+        $cisternas = Cisterna::whereIn('IdCisterna', $pageIds)
+                                ->orderByDesc('NumeroCisterna')
+                                ->get();
+
+        $cisternas = new \Illuminate\Pagination\LengthAwarePaginator(
+            $cisternas,
+            $total,
+            $perPage,
+            $page,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
 
         return view('cisterna.index', compact('cisternas'));
     }
