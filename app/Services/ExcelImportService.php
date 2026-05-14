@@ -144,6 +144,15 @@ class ExcelImportService
                     continue;
                 }
 
+                $error = $this->validarDatosRequeridos($data);
+                if ($error !== null) {
+                    $resultados[] = array_merge($data, [
+                        '_hoja' => $nombreHoja,
+                        '_error' => $error,
+                    ]);
+                    continue;
+                }
+
                 $resultado = $callback($data, $nombreHoja);
                 if ($resultado !== null) {
                     $resultados[] = $resultado;
@@ -189,6 +198,18 @@ class ExcelImportService
     }
 
     /**
+     * Valida que una hoja parcialmente rellena tenga los datos minimos.
+     */
+    private function validarDatosRequeridos(array $data): ?string
+    {
+        if (empty($data['OF']) || empty($data['NumeroCisterna']) || trim((string) ($data['Conductor'] ?? '')) === '') {
+            return 'Faltan datos obligatorios: OF, N cisterna o conductor.';
+        }
+
+        return null;
+    }
+
+    /**
      * Extrae y transforma los datos de una hoja concreta del Excel.
      * 
      * Lee las celdas definidas en las constantes de clase y las convierte
@@ -204,8 +225,8 @@ class ExcelImportService
 
         return [
             // Identificacion principal
-            'OF' => (int) $this->cellValue($ws, self::CELDA_OF),
-            'NumeroCisterna' => (int) $this->cellValue($ws, self::CELDA_NUMERO_CISTERNA),
+            'OF' => $this->integerCellValue($ws, self::CELDA_OF),
+            'NumeroCisterna' => $this->integerCellValue($ws, self::CELDA_NUMERO_CISTERNA),
             
             // Datos del conductor
             'Conductor' => $this->cellValue($ws, self::CELDA_CONDUCTOR),
@@ -262,6 +283,15 @@ class ExcelImportService
     {
         $raw = $ws->getCell($coord)->getCalculatedValue();
         return trim((string) ($raw ?? ''));
+    }
+
+    /**
+     * Obtiene un entero desde una celda sin convertir valores vacios a cero.
+     */
+    private function integerCellValue(Worksheet $ws, string $coord): ?int
+    {
+        $value = $this->cellValue($ws, $coord);
+        return $value === '' || !is_numeric($value) ? null : (int) $value;
     }
 
     /**
@@ -371,4 +401,3 @@ class ExcelImportService
         return $date->format('Ymd H:i:s');
     }
 }
-

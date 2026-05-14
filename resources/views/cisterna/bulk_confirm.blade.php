@@ -72,8 +72,8 @@
                                         {{-- Checkbox incluir --}}
                                         <td class="text-center">
                                             <input type="checkbox"
-                                                    name="fials[{{ $i }}][_incluir]"
-                                                    values="1"
+                                                    name="filas[{{ $i }}][_incluir]"
+                                                    value="1"
                                                     class="form-check-input check-fila"
                                                     {{ $error ? '' : 'checked' }}>
                                         </td>
@@ -115,7 +115,7 @@
                                         {{-- Origen --}}
                                         <td>
                                             <input type="text"
-                                                    name="filas[{{ $i }}}][Origen]"
+                                                    name="filas[{{ $i }}][Origen]"
                                                     value="{{ $fila['Origen'] ?? '' }}"
                                                     class="form-control form-control-sm"
                                                     style="min-width: 100px">
@@ -124,7 +124,7 @@
                                         {{-- Destino --}}
                                         <td>
                                             <input type="text"
-                                                   name="filas[{{ $i }}}][Destino]"
+                                                   name="filas[{{ $i }}][Destino]"
                                                    value="{{ $fila['Destino'] ?? '' }}"
                                                    class="form-control form-control-sm"
                                                    style="min-width: 100px">
@@ -133,7 +133,7 @@
                                         {{-- Matricula --}}
                                         <td>
                                             <input type="text"
-                                                   name="filas[{{ $i }}}][Matricula]"
+                                                   name="filas[{{ $i }}][Matricula]"
                                                    value="{{ $fila['Matricula'] ?? '' }}"
                                                    class="form-control form-control-sm"
                                                    style="min-width: 100px">
@@ -142,7 +142,7 @@
                                         {{-- MatriculaCisterna --}}
                                         <td>
                                             <input type="text"
-                                                   name="filas[{{ $i }}}][MatriculaCisterna]"
+                                                   name="filas[{{ $i }}][MatriculaCisterna]"
                                                    value="{{ $fila['MatriculaCisterna'] ?? '' }}"
                                                    class="form-control form-control-sm"
                                                    style="min-width: 100px">
@@ -151,7 +151,7 @@
                                         {{-- Transporte --}}
                                         <td>
                                             <input type="text"
-                                                   name="filas[{{ $i }}}][Transporte]"
+                                                   name="filas[{{ $i }}][Transporte]"
                                                    value="{{ $fila['Transporte'] ?? '' }}"
                                                    class="form-control form-control-sm"
                                                    style="min-width: 100px">
@@ -160,7 +160,7 @@
                                         {{-- Telefono --}}
                                         <td>
                                             <input type="text"
-                                                   name="filas[{{ $i }}}][Telefono]"
+                                                   name="filas[{{ $i }}][Telefono]"
                                                    value="{{ $fila['Telefono'] ?? '' }}"
                                                    class="form-control form-control-sm"
                                                    style="min-width: 100px">
@@ -169,9 +169,9 @@
                                         {{-- FechaConsumoMG --}}
                                         <td>
                                             <input type="date"
-                                                    name="filas[{{ $i }}]['FechaConsumoMG']"
+                                                    name="filas[{{ $i }}][FechaConsumoMG]"
                                                     value="{{ isset($fila['FechaConsumoMG']) && $fila['FechaConsumoMG']
-                                                        ? \Carbon\Carbon::parse($fila['FechaConsumoMG'])->formato('Y-m-d')
+                                                        ? \Carbon\Carbon::parse($fila['FechaConsumoMG'])->format('Y-m-d')
                                                         : ''}}"
                                                     class="form-control form-control-sm"
                                                     style="min-width: 140px">

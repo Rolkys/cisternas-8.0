@@ -249,9 +249,7 @@ class CisternaController extends Controller
                 'Observaciones'     => 'nullable|string',
             ]);
 
-            $base = $cisterna->FechaConsumoMG?->format('Y-m-d')
-                 ?? $cisterna->FechaEntradaMG?->format('Y-m-d')
-                 ?? now()->format('Y-m-d');
+            $base = $this->baseConsumptionDate($cisterna);
 
             if ($request->has('HoraRealConsumoL1')) {
                 $cisterna->HoraRealConsumoL1 = $request->HoraRealConsumoL1
@@ -305,9 +303,7 @@ class CisternaController extends Controller
             'Observaciones'      => 'nullable|string'
         ]);
 
-        $base = $cisterna->FechaConsumoMG?->format('Y-m-d')
-             ?? $cisterna->FechaEntradaMG?->format('Y-m-d')
-             ?? now()->format('Y-m-d');
+        $base = $this->baseConsumptionDate($cisterna);
 
         $user = Auth::user();
 
@@ -443,6 +439,12 @@ class CisternaController extends Controller
                 $data = collect($filaEditada)->except(['_incluir', '_hoja', '_error'])->toArray();
                 $data['GlobalGAP'] = !empty($filaEditada['GlobalGAP']);
                 $data['FDA']       = !empty($filaEditada['FDA']);
+                $data = $this->normalizeRequiredImportFields($data);
+
+                if (!$this->hasRequiredImportFields($data)) {
+                    $omitidos++;
+                    continue;
+                }
 
                 if (isset($data['Observaciones']) && trim((string) $data['Observaciones']) === '') {
                     $data['Observaciones'] = null;
@@ -485,6 +487,12 @@ class CisternaController extends Controller
 
         foreach ($filas as $fila) {
             if (empty($fila['_incluir'])) {
+                $omitidos++;
+                continue;
+            }
+
+            $fila = $this->normalizeRequiredImportFields($fila);
+            if (!$this->hasRequiredImportFields($fila)) {
                 $omitidos++;
                 continue;
             }
@@ -658,6 +666,19 @@ class CisternaController extends Controller
         return $data;
     }
 
+    private function baseConsumptionDate(Cisterna $cisterna): string
+    {
+        if ($cisterna->FechaConsumoMG) {
+            return $cisterna->FechaConsumoMG->format('Y-m-d');
+        }
+
+        if ($cisterna->FechaEntradaMG) {
+            return $cisterna->FechaEntradaMG->format('Y-m-d');
+        }
+
+        return now()->format('Y-m-d');
+    }
+
     private function normalizeImportConsumptionHours(array $data): array
     {
         $keys = [
@@ -673,6 +694,29 @@ class CisternaController extends Controller
             }
         }
         return $data;
+    }
+
+    private function normalizeRequiredImportFields(array $data): array
+    {
+        foreach (['OF', 'NumeroCisterna'] as $key) {
+            if (array_key_exists($key, $data)) {
+                $value = trim((string) $data[$key]);
+                $data[$key] = $value !== '' && is_numeric($value) ? (int) $value : null;
+            }
+        }
+
+        if (array_key_exists('Conductor', $data)) {
+            $data['Conductor'] = trim((string) $data['Conductor']);
+        }
+
+        return $data;
+    }
+
+    private function hasRequiredImportFields(array $data): bool
+    {
+        return !empty($data['OF'])
+            && !empty($data['NumeroCisterna'])
+            && trim((string) ($data['Conductor'] ?? '')) !== '';
     }
 
     public function destroyAll()
