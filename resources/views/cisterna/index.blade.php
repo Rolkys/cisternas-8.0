@@ -62,6 +62,19 @@
                 </a>
             @endif
 
+            {{-- ELIMINAR TODAS LAS CISTERNAS --}}
+            @if(auth()->user()->isRoot() || auth()->user()->isAdmin())
+                <form method="POST" action="{{ route('cisterna.destroyAll') }}" style="display:inline;" 
+                      onsubmit="return confirm('¿Estás seguro de que deseas eliminar TODAS las cisternas? Esta acción no se puede deshacer.')">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-outline-danger w-100 btn-grid">
+                        <i class="bi bi-trash3"></i>
+                        <span class="d-none d-md-inline ms-1">Eliminar Todas</span>
+                    </button>
+                </form>
+            @endif
+
     </div>
 
 </div>

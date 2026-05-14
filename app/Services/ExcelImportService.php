@@ -306,23 +306,23 @@ class ExcelImportService
      */
     private function parseDate($value): ?string
     {
-        if ($value === null || $value === '') {
-            return null;
-        }
+        if ($value == null || $value == '') return null;
 
-        // Numeros de serie Excel
-        if (is_numeric($value)) {
-            return Date::excelToDateTimeObject((float) $value)->format('Ymd H:i:s');
-        }
-
-        // Objetos DateTime
-        if ($value instanceof \DateTime) {
-            return $value->format('Ymd H:i:s');
-        }
-
-        // Intentar parsear como cadena
         try {
-            return (new \DateTime((string) $value))->format('Ymd H:i:s');
+            if(is_numeric($value)){
+                $dt = Date::excelToDateTimeObject((float) $value);
+            }elseif($value instanceof  \DateTime){
+                $dt = $value;
+            }else{
+                $dt = new \DateTime((string)$value);
+            }
+
+            //Validar que el año sea razonable (entre 2000 y 2100)
+            $year = (int) $dt->format('Y');
+                if ($year < 2000 || $year > 2100){
+                    return null;
+                }
+            return $dt->format('Ymd H:i:s');
         } catch (\Exception $e) {
             return null;
         }
