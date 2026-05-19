@@ -96,7 +96,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/export', [CisternaController::class, 'export'])->name('export');
         
         // Eliminación masiva (rutas duplicadas eliminadas)
-        Route::delete('/destroy-all', [CisternaController::class, 'destroyAll'])->name('destroyAll');
+        Route::delete('/destroy-all', [CisternaController::class, 'destroyAll'])
+            ->middleware('role:Root')
+            ->name('destroyAll');
         
         // Actualización de consumo (para operarios)
         Route::patch('/{cisterna}/consumo', [CisternaController::class, 'updateConsumo'])->name('consumo');

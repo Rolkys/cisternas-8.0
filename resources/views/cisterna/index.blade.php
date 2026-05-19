@@ -63,16 +63,14 @@
             @endif
 
             {{-- ELIMINAR TODAS LAS CISTERNAS --}}
-            @if(auth()->user()->isRoot() || auth()->user()->isAdmin())
-                <form method="POST" action="{{ route('cisterna.destroyAll') }}" style="display:inline;" 
-                      onsubmit="return confirm('¿Estás seguro de que deseas eliminar TODAS las cisternas? Esta acción no se puede deshacer.')">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-outline-danger w-100 btn-grid">
-                        <i class="bi bi-trash3"></i>
-                        <span class="d-none d-md-inline ms-1">Eliminar Todas</span>
-                    </button>
-                </form>
+            @if(auth()->user()->isRoot())
+                <button type="button"
+                        class="btn btn-outline-danger w-100 btn-grid"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalDestroyAll">
+                    <i class="bi bi-trash3"></i>
+                    <span class="d-none d-md-inline ms-1">Eliminar Todas</span>
+                </button>
             @endif
 
     </div>
@@ -266,6 +264,45 @@
     <span><span class="legend-box" style="background:var(--row-futura)"></span>Futura</span>
     <span><span class="legend-box" style="background:var(--row-pendiente)"></span>Pendiente</span>
 </div>
+
+{{-- Modal eliminacion total --}}
+@if(auth()->user()->isRoot())
+<div class="modal fade" id="modalDestroyAll" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST" action="{{ route('cisterna.destroyAll') }}">
+                @csrf
+                @method('DELETE')
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-trash3"></i> Eliminar todas las cisternas
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger">
+                        Esta accion elimina todas las cisternas de forma permanente.
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Contrasena actual</label>
+                        <input type="password" name="password" class="form-control" required autocomplete="current-password">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Escribe ELIMINAR TODO para confirmar</label>
+                        <input type="text" name="confirmation_text" class="form-control" required autocomplete="off">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash3"></i> Eliminar definitivamente
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
 
 {{-- Modal consumo --}}
 <div class="modal fade" id="modalConsumo" tabindex="-1" aria-hidden="true">

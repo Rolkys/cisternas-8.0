@@ -3,7 +3,7 @@
 /**
  * DOC: Proyecto Cisternas
  * Archivo personalizado del dominio de negocio.
- * Contiene logica especifica de gestion de cisternas/usuarios/planificacion.
+ * Contiene lógica específica de gestion de cisternas/usuarios/planificacion.
  */
 
 namespace App\Http\Controllers;
@@ -11,6 +11,8 @@ namespace App\Http\Controllers;
 use App\Models\Cisterna;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class CisternaController extends Controller
 {
@@ -32,7 +34,7 @@ class CisternaController extends Controller
                     });
             });
         } else {
-            // Filtro automatico por year: muestra el year actual + diciembre del year anterior
+            // Filtro automático por year: muestra el year actual + diciembre del year anterior
             $yearActual = now()->year;
             $query->where(function ($q) use ($yearActual) {
                 $q->whereYear('FechaConsumoMG', $yearActual)
@@ -153,7 +155,7 @@ class CisternaController extends Controller
             'Destino'                => 'nullable|string|max:255',
             'Matricula'              => 'nullable|string|max:255',
             'MatriculaCisterna'      => 'nullable|string|max:255',
-            'Telefono'               => 'nullable|string|max:255',
+            'Teléfono'               => 'nullable|string|max:255',
             'Transporte'             => 'nullable|string|max:255',
             'FechaConsumoMG'         => 'nullable|date',
             'Observaciones'          => 'nullable|string',
@@ -191,20 +193,20 @@ class CisternaController extends Controller
 
         if ($user->isRoot() || $user->isAdmin()) {
             $data = $request->validate([
-                'OF'             => 'required|integer',
-                'NumeroCisterna' => 'required|integer',
-                'Conductor'      => 'required|string|max:255',
-                'Origen'         => 'nullable|string|max:255',
-                'Destino'        => 'nullable|string|max:255',
-                'Matricula'      => 'nullable|string|max:50',
+                'OF'                => 'required|integer',
+                'NumeroCisterna'    => 'required|integer',
+                'Conductor'         => 'required|string|max:255',
+                'Origen'            => 'nullable|string|max:255',
+                'Destino'           => 'nullable|string|max:255',
+                'Matricula'         => 'nullable|string|max:50',
                 'MatriculaCisterna' => 'nullable|string|max:50',
-                'Telefono'       => 'nullable|string|max:20',
-                'Transporte'     => 'nullable|string|max:255',
-                'FechaConsumoMG' => 'nullable|date',
-                'Observaciones'  => 'nullable|string',
-                'Incidencias'    => 'nullable|string',
-                'GlobalGAP'      => 'nullable|boolean',
-                'FDA'            => 'nullable|boolean',
+                'Teléfono'          => 'nullable|string|max:20',
+                'Transporte'        => 'nullable|string|max:255',
+                'FechaConsumoMG'    => 'nullable|date',
+                'Observaciones'     => 'nullable|string',
+                'Incidencias'       => 'nullable|string',
+                'GlobalGAP'         => 'nullable|boolean',
+                'FDA'               => 'nullable|boolean',
             ]);
 
             $data['GlobalGAP'] = $request->boolean('GlobalGAP');
@@ -219,20 +221,20 @@ class CisternaController extends Controller
 
         if ($user->isUser()) {
             $data = $request->validate([
-                'OF'             => 'required|integer',
-                'NumeroCisterna' => 'required|integer',
-                'Conductor'      => 'required|string|max:255',
-                'Origen'         => 'nullable|string|max:255',
-                'Destino'        => 'nullable|string|max:255',
-                'Matricula'      => 'nullable|string|max:50',
+                'OF'                => 'required|integer',
+                'NumeroCisterna'    => 'required|integer',
+                'Conductor'         => 'required|string|max:255',
+                'Origen'            => 'nullable|string|max:255',
+                'Destino'           => 'nullable|string|max:255',
+                'Matricula'         => 'nullable|string|max:50',
                 'MatriculaCisterna' => 'nullable|string|max:50',
-                'Telefono'       => 'nullable|string|max:20',
-                'Transporte'     => 'nullable|string|max:255',
-                'FechaConsumoMG' => 'nullable|date',
-                'Observaciones'  => 'nullable|string',
-                'Incidencias'    => 'nullable|string',
-                'GlobalGAP'      => 'nullable|boolean',
-                'FDA'            => 'nullable|boolean',
+                'Teléfono'          => 'nullable|string|max:20',
+                'Transporte'        => 'nullable|string|max:255',
+                'FechaConsumoMG'    => 'nullable|date',
+                'Observaciones'     => 'nullable|string',
+                'Incidencias'       => 'nullable|string',
+                'GlobalGAP'         => 'nullable|boolean',
+                'FDA'               => 'nullable|boolean',
             ]);
 
             $data['GlobalGAP'] = $request->boolean('GlobalGAP');
@@ -299,7 +301,7 @@ class CisternaController extends Controller
                         ->with('success', '✅ Cisterna eliminada correctamente.');
     }
 
-    // ==================== UPDATE CONSUMO MODAL ====================
+    // ==================== UPDATE Consumo MODAL ====================
     public function updateConsumo(Request $request, Cisterna $cisterna)
     {
         $request->validate([
@@ -784,14 +786,36 @@ class CisternaController extends Controller
             && trim((string) ($data['Conductor'] ?? '')) !== '';
     }
 
-    public function destroyAll()
+    public function destroyAll(Request $request)
     {
-        if (!auth()->user()->isRoot() && !auth()->user()->isAdmin()) {
+        $user = auth()->user();
+
+        if (!optional($user)->isRoot()) {
             return redirect()->route('cisterna.index')
-                ->with('warning', 'No tienes permisos para eliminar todas las cisternas.');
+                ->with('warning', 'Solo el usuario Root puede eliminar todas las cisternas.');
         }
+
+        $validated = $request->validate([
+            'password' => 'required|string',
+            'confirmation_text' => 'required|string|in:ELIMINAR TODO',
+        ]);
+
+        if (!Hash::check($validated['password'], $user->password)) {
+            return redirect()->route('cisterna.index')
+                ->with('warning', 'La contrasena no es correcta. No se ha eliminado ninguna cisterna.');
+        }
+
+        $deletedCount = Cisterna::count();
+
+        Log::warning('Eliminacion total de cisternas ejecutada', [
+            'user_id' => $user->getKey(),
+            'user_email' => $user->email,
+            'deleted_count' => $deletedCount,
+        ]);
+
         Cisterna::truncate();
+
         return redirect()->route('cisterna.index')
-            ->with('success', 'Todas las cisternas han sido eliminadas correctamente.');
+            ->with('success', "Se han eliminado {$deletedCount} cisternas correctamente.");
     }
 }
