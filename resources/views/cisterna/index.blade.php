@@ -355,8 +355,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const l2 = document.getElementById('hrc-l2');
         
         if (!form) {
-            console.error('ERROR: No existe #form-consumo');
-            alert('Error: No se encontró el formulario de consumo');
+            console.warn('ADVERTENCIA: No existe #form-consumo');
+            alert('Advertencia: No se encontró el formulario de consumo');
             return;
         }
         
@@ -379,8 +379,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Abrir modal
         const modalRoot = document.getElementById('modalConsumo');
         if (!modalRoot) {
-            console.error('ERROR: No existe #modalConsumo');
-            alert('Error: No se encontró el modal de consumo');
+            console.warn('ADVERTENCIA: No existe #modalConsumo');
+            alert('Advertencia: No se encontró el modal de consumo');
             return;
         }
         

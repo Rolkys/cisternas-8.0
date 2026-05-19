@@ -82,7 +82,7 @@ class AdminController extends Controller
 
         return redirect()->route('admin.users')->with(
             'success',
-            "Usuario creado correctamente.<br>Contraseña generada: <b>{$plainPassword}</b>"
+            "Usuario creado correctamente. Contrasena generada: {$plainPassword}"
         );
     }
 
@@ -97,7 +97,7 @@ class AdminController extends Controller
     public function toggle(User $user)
     {
         if ($this->esUsuarioRootProtegido($user)) {
-            return back()->with('error', 'No se puede modificar el estado del usuario root.');
+            return back()->with('warning', 'No se puede modificar el estado del usuario root.');
         }
 
         $user->is_active = !$user->is_active;
@@ -122,7 +122,7 @@ class AdminController extends Controller
     public function changeRole(Request $request, User $user)
     {
         if ($this->esUsuarioRootProtegido($user)) {
-            return back()->with('error', 'No se puede modificar el rol del usuario root.');
+            return back()->with('warning', 'No se puede modificar el rol del usuario root.');
         }
 
         $validated = $request->validate([
@@ -146,7 +146,7 @@ class AdminController extends Controller
     public function destroy(User $user)
     {
         if ($this->esUsuarioRootProtegido($user)) {
-            return back()->with('error', 'No se puede eliminar el usuario root.');
+            return back()->with('warning', 'No se puede eliminar el usuario root.');
         }
 
         $email = $user->email;
@@ -251,7 +251,7 @@ class AdminController extends Controller
     {
         Log::info('Usuario creado por administrador', [
             'user_email' => $userEmail,
-            'admin_email' => auth()->user()?->email,
+            'admin_email' => optional(auth()->user())->email,
         ]);
     }
 
@@ -310,5 +310,3 @@ class AdminController extends Controller
         };
     }
 }
-
-

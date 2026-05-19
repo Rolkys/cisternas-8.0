@@ -17,6 +17,7 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
 
 class ExcelExportService
 {
@@ -135,13 +136,13 @@ class ExcelExportService
     {
         $sheet->setCellValue("A{$fila}", $cisterna->OF);
         $sheet->setCellValue("B{$fila}", str_pad((string) $cisterna->NumeroCisterna, 4, '0', STR_PAD_LEFT));
-        $sheet->setCellValue("C{$fila}", $cisterna->Conductor);
-        $sheet->setCellValue("D{$fila}", $cisterna->Telefono);
-        $sheet->setCellValue("E{$fila}", $cisterna->Origen);
-        $sheet->setCellValue("F{$fila}", $cisterna->Destino);
-        $sheet->setCellValue("G{$fila}", $cisterna->Matricula);
-        $sheet->setCellValue("H{$fila}", $cisterna->MatriculaCisterna);
-        $sheet->setCellValue("I{$fila}", $cisterna->Transporte);
+        $this->setSafeTextCell($sheet, "C{$fila}", $cisterna->Conductor);
+        $this->setSafeTextCell($sheet, "D{$fila}", $cisterna->Telefono);
+        $this->setSafeTextCell($sheet, "E{$fila}", $cisterna->Origen);
+        $this->setSafeTextCell($sheet, "F{$fila}", $cisterna->Destino);
+        $this->setSafeTextCell($sheet, "G{$fila}", $cisterna->Matricula);
+        $this->setSafeTextCell($sheet, "H{$fila}", $cisterna->MatriculaCisterna);
+        $this->setSafeTextCell($sheet, "I{$fila}", $cisterna->Transporte);
         $sheet->setCellValue("J{$fila}", $cisterna->HoraSalida?->format('d/m/Y H:i'));
         $sheet->setCellValue("K{$fila}", $cisterna->FechaEntradaMG?->format('d/m/Y H:i'));
         $sheet->setCellValue("L{$fila}", $cisterna->FechaConsumoMG?->format('d/m/Y'));
@@ -151,8 +152,19 @@ class ExcelExportService
         $sheet->setCellValue("P{$fila}", $cisterna->HoraRealConsumoL2?->format('H:i'));
         $sheet->setCellValue("Q{$fila}", $this->formatearBooleano($cisterna->GlobalGAP));
         $sheet->setCellValue("R{$fila}", $this->formatearBooleano($cisterna->FDA));
-        $sheet->setCellValue("S{$fila}", $cisterna->Observaciones);
-        $sheet->setCellValue("T{$fila}", $cisterna->Incidencias);
+        $this->setSafeTextCell($sheet, "S{$fila}", $cisterna->Observaciones);
+        $this->setSafeTextCell($sheet, "T{$fila}", $cisterna->Incidencias);
+    }
+
+    private function setSafeTextCell($sheet, string $cell, $value): void
+    {
+        $text = (string) ($value ?? '');
+
+        if ($text !== '' && preg_match('/^[=\+\-@\t\r]/', $text)) {
+            $text = "'" . $text;
+        }
+
+        $sheet->setCellValueExplicit($cell, $text, DataType::TYPE_STRING);
     }
 
     /**

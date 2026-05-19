@@ -46,7 +46,7 @@ class PlanificacionController extends Controller
     /**
      * Ruta completa al archivo JSON de planificacion.
      */
-    private string $rutaJson;
+    private $rutaJson;
 
     /**
      * Constructor: inicializa la ruta del archivo JSON.
@@ -115,7 +115,10 @@ class PlanificacionController extends Controller
      */
     public function store(Request $request)
     {
-        $this->verificarPermisoAdmin();
+        if (!$this->verificarPermisoAdmin()) {
+            return redirect()->route('planificacion.index')
+                ->with('warning', 'Solo administradores pueden modificar la planificacion.');
+        }
 
         $datosValidados = $request->validate([
             'NumeroCisterna'         => 'required|integer',
@@ -146,13 +149,17 @@ class PlanificacionController extends Controller
      */
     public function edit(string $id)
     {
-        $this->verificarPermisoAdmin();
+        if (!$this->verificarPermisoAdmin()) {
+            return redirect()->route('planificacion.index')
+                ->with('warning', 'Solo administradores pueden modificar la planificacion.');
+        }
 
         $filas = $this->leerFilas();
         $fila = collect($filas)->firstWhere('id', $id);
 
         if (!$fila) {
-            abort(404, 'Fila no encontrada.');
+            return redirect()->route('planificacion.index')
+                ->with('warning', 'Fila no encontrada.');
         }
 
         return view('planificacion.edit', compact('fila'));
@@ -167,7 +174,10 @@ class PlanificacionController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $this->verificarPermisoAdmin();
+        if (!$this->verificarPermisoAdmin()) {
+            return redirect()->route('planificacion.index')
+                ->with('warning', 'Solo administradores pueden modificar la planificacion.');
+        }
 
         $datosValidados = $request->validate([
             'NumeroCisterna'         => 'required|integer',
@@ -200,7 +210,10 @@ class PlanificacionController extends Controller
      */
     public function destroy(string $id)
     {
-        $this->verificarPermisoAdmin();
+        if (!$this->verificarPermisoAdmin()) {
+            return redirect()->route('planificacion.index')
+                ->with('warning', 'Solo administradores pueden modificar la planificacion.');
+        }
 
         $filas = $this->leerFilas();
         $filas = array_values(array_filter($filas, fn ($f) => $f['id'] !== $id));
@@ -218,7 +231,10 @@ class PlanificacionController extends Controller
      */
     public function clear()
     {
-        $this->verificarPermisoAdmin();
+        if (!$this->verificarPermisoAdmin()) {
+            return redirect()->route('planificacion.index')
+                ->with('warning', 'Solo administradores pueden modificar la planificacion.');
+        }
         $this->guardarFilas([]);
 
         return redirect()->route('planificacion.index')
@@ -238,7 +254,7 @@ class PlanificacionController extends Controller
 
         if (empty($filas)) {
             return redirect()->route('planificacion.index')
-                             ->with('error', 'No hay filas para exportar.');
+                             ->with('warning', 'No hay filas para exportar.');
         }
 
         $rutaTemporal = $this->generarExcelPlanificacion($filas);
@@ -310,12 +326,9 @@ class PlanificacionController extends Controller
     /**
      * Verifica que el usuario tenga permisos de administrador.
      *
-     * @throws \Symfony\Component\HttpKernel\Exception\HttpException Si no tiene permisos
      */
-    private function verificarPermisoAdmin(): void
+    private function verificarPermisoAdmin(): bool
     {
-        if (!auth()->user()?->isAdmin()) {
-            abort(403, 'Solo administradores pueden modificar la planificacion.');
-        }
+        return (bool) optional(auth()->user())->isAdmin();
     }
 }

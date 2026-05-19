@@ -29,15 +29,10 @@ class CheckRole
     private const RUTA_LOGIN = '/login';
 
     /**
-     * Codigo HTTP para acceso prohibido.
-     */
-    private const HTTP_FORBIDDEN = 403;
-
-    /**
      * Maneja la peticion validando los roles requeridos.
      *
      * Si el usuario no esta autenticado, redirige al login.
-     * Si el usuario no tiene ninguno de los roles permitidos, aborta con 403.
+     * Si el usuario no tiene ninguno de los roles permitidos, vuelve al listado con una advertencia.
      *
      * @param Request $request Peticion HTTP entrante
      * @param Closure $next Siguiente middleware en la cadena
@@ -55,10 +50,10 @@ class CheckRole
         $userRole = auth()->user()->role;
         
         if (!in_array($userRole, $roles, true)) {
-            abort(self::HTTP_FORBIDDEN, self::MENSAJE_ACCESO_DENEGADO);
+            return redirect()->route('cisterna.index')
+                ->with('warning', self::MENSAJE_ACCESO_DENEGADO);
         }
 
         return $next($request);
     }
 }
-

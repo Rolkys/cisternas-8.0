@@ -67,7 +67,7 @@
                                         $destinoTexto = trim((string)($fila['Destino'] ?? ''));
                                         $esMoratalla = str_contains(strtolower($destinoTexto), 'moratalla');
                                     @endphp
-                                    <tr class="{{ $error ? 'table-danger' : ""}}">
+                                    <tr class="{{ $error ? 'table-warning' : ""}}">
 
                                         {{-- Checkbox incluir --}}
                                         <td class="text-center">
@@ -243,7 +243,7 @@
                                         {{-- Estado --}}
                                         <td>
                                             @if($error)
-                                                <span class="badge bg-danger"
+                                                <span class="badge bg-warning text-dark"
                                                       style="cursor:pointer"
                                                       onclick="mostrarError(
                                                           '{{ $fila['OF'] ?? '-' }}',
@@ -254,7 +254,7 @@
                                                           '{{ addslashes($fila['_hoja']) ?? '-' }}',
                                                           '{{ addslashes($error) }}'
                                                       )">
-                                                    <i class="bi bi-exclamation-circle"></i> Error
+                                                    <i class="bi bi-exclamation-triangle"></i> Advertencia
                                                 </span>
                                             @else
                                                 <span class="badge bg-success">Nueva</span>
@@ -280,12 +280,12 @@
         </div>
     @endif
 
-    {{-- Modal error cisterna --}}
+    {{-- Modal advertencia cisterna --}}
     <div class="modal fade" id="modalError" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-header bg-danger text-white">
+            <div class="modal-header bg-warning text-dark">
                 <h5 class="modal-title">
-                    <i class="bi bi-exclamation-triangle"></i> Problema con esta Cisterna
+                    <i class="bi bi-exclamation-triangle"></i> Advertencia con esta Cisterna
                 </h5>
                 <button type="button" class="btn-close-white" data-bs-dismiss="modal"></button>
             </div>
@@ -297,7 +297,7 @@
                     <tr><th>Origen</th><td id="err-origen">-</td></tr>
                     <tr><th>Destino</th><td id="err-destino">-</td></tr>
                     <tr><th>Hoja Excel</th><td id="err-hoja">-</td></tr>
-                    <tr><th>Error</th><td id="err-msg" class="text-danger fw-bold">-</td></tr>
+                    <tr><th>Advertencia</th><td id="err-msg" class="text-warning-emphasis fw-bold">-</td></tr>
                 </table>
             </div>
             <div class="model-footer">

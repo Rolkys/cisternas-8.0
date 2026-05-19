@@ -21,12 +21,9 @@ class CisternaController extends Controller
     public function index(Request $request)
     {
         $query = Cisterna::query();
-        $year = $request->input('year');
-        $yearValido = is_string($year) || is_numeric($year)
-            ? preg_match('/^\d{4}$/', (string) $year)
-            : false;
+        $year = $this->normalizeYearFilter($request->input('year'));
 
-        if ($request->filled('year') && $yearValido) {
+        if ($year !== null) {
             $query->where(function ($q) use ($year) {
                 $q->whereYear('FechaConsumoMG', $year)
                     ->orWhere(function ($q2) use ($year) {
@@ -71,12 +68,13 @@ class CisternaController extends Controller
         }
 
         // Filtro por fecha de consumo
-        if ($request->filled('fecha')) {
-            $query->where(function ($q) use ($request) {
-                $q->whereDate('FechaConsumoMG', $request->fecha)
-                    ->orWhere(function ($q2) use ($request) {
+        $fecha = $this->normalizeDateFilter($request->input('fecha'));
+        if ($fecha !== null) {
+            $query->where(function ($q) use ($fecha) {
+                $q->whereDate('FechaConsumoMG', $fecha)
+                    ->orWhere(function ($q2) use ($fecha) {
                         $q2->whereNull('FechaConsumoMG')
-                            ->whereDate('FechaEntradaMG', $request->fecha);
+                            ->whereDate('FechaEntradaMG', $fecha);
                     });
             });
         }
@@ -132,7 +130,8 @@ class CisternaController extends Controller
     {
         $user = Auth::user();
         if (!$user->isRoot() && !$user->isAdmin() && !$user->isUser()) {
-            abort(403, 'No tienes permisos para crear registros');
+            return redirect()->route('cisterna.index')
+                ->with('warning', 'No tienes permisos para crear registros.');
         }
         return view('cisterna.create');
     }
@@ -142,10 +141,11 @@ class CisternaController extends Controller
     {
         $user = Auth::user();
         if (!$user->isRoot() && !$user->isAdmin() && !$user->isUser()) {
-            abort(403, 'No tienes permisos para crear registros');
+            return redirect()->route('cisterna.index')
+                ->with('warning', 'No tienes permisos para crear registros.');
         }
 
-        $request->validate([
+        $data = $request->validate([
             'OF'                     => 'required|integer',
             'NumeroCisterna'         => 'required|integer',
             'Conductor'              => 'required|string|max:255',
@@ -162,7 +162,8 @@ class CisternaController extends Controller
             'FDA'                    => 'nullable|boolean',
         ]);
 
-        $data = $request->all();
+        $data['GlobalGAP'] = $request->boolean('GlobalGAP');
+        $data['FDA'] = $request->boolean('FDA');
         $data = $this->syncFechasConsumoEntrada($data);
         $data = $this->autoConsumir($data);
         Cisterna::create($data);
@@ -189,7 +190,7 @@ class CisternaController extends Controller
         $user = Auth::user();
 
         if ($user->isRoot() || $user->isAdmin()) {
-            $request->validate([
+            $data = $request->validate([
                 'OF'             => 'required|integer',
                 'NumeroCisterna' => 'required|integer',
                 'Conductor'      => 'required|string|max:255',
@@ -206,7 +207,8 @@ class CisternaController extends Controller
                 'FDA'            => 'nullable|boolean',
             ]);
 
-            $data = $request->all();
+            $data['GlobalGAP'] = $request->boolean('GlobalGAP');
+            $data['FDA'] = $request->boolean('FDA');
             $data = $this->syncFechasConsumoEntrada($data);
             $data = $this->autoConsumir($data, $cisterna);
             $cisterna->update($data);
@@ -216,7 +218,7 @@ class CisternaController extends Controller
         }
 
         if ($user->isUser()) {
-            $request->validate([
+            $data = $request->validate([
                 'OF'             => 'required|integer',
                 'NumeroCisterna' => 'required|integer',
                 'Conductor'      => 'required|string|max:255',
@@ -233,7 +235,8 @@ class CisternaController extends Controller
                 'FDA'            => 'nullable|boolean',
             ]);
 
-            $data = $request->all();
+            $data['GlobalGAP'] = $request->boolean('GlobalGAP');
+            $data['FDA'] = $request->boolean('FDA');
             $data = $this->syncFechasConsumoEntrada($data);
             $data = $this->autoConsumir($data, $cisterna);
             $cisterna->update($data);
@@ -271,7 +274,8 @@ class CisternaController extends Controller
                             ->with('success', '✅ Consumo actualizado correctamente');
         }
 
-        abort(403, 'No tienes permisos para editar');
+        return redirect()->route('cisterna.index')
+            ->with('warning', 'No tienes permisos para editar.');
     }
 
     // ==================== DESTROY ====================
@@ -279,7 +283,8 @@ class CisternaController extends Controller
     {
         $user = Auth::user();
         if (!$user->isRoot() && !$user->isAdmin()) {
-            abort(403, 'No tienes permisos para eliminar registros');
+            return redirect()->route('cisterna.index')
+                ->with('warning', 'No tienes permisos para eliminar registros.');
         }
 
         if ($cisterna->Observaciones || $cisterna->Incidencias) {
@@ -336,7 +341,8 @@ class CisternaController extends Controller
     {
         $user = Auth::user();
         if (!$user->isRoot() && !$user->isAdmin()) {
-            abort(403, 'No tienes permisos para realizar carga masiva');
+            return redirect()->route('cisterna.index')
+                ->with('warning', 'No tienes permisos para realizar carga masiva.');
         }
         return view('cisterna.bulk');
     }
@@ -345,7 +351,8 @@ class CisternaController extends Controller
     {
         $user = Auth::user();
         if (!$user->isRoot() && !$user->isAdmin()) {
-            abort(403, 'No tienes permisos para realizar carga masiva');
+            return redirect()->route('cisterna.index')
+                ->with('warning', 'No tienes permisos para realizar carga masiva.');
         }
 
         $request->validate([
@@ -370,13 +377,14 @@ class CisternaController extends Controller
     {
         $user = Auth::user();
         if (!$user->isRoot() && !$user->isAdmin()) {
-            abort(403, 'No tienes permisos para realizar carga masiva');
+            return redirect()->route('cisterna.index')
+                ->with('warning', 'No tienes permisos para realizar carga masiva.');
         }
 
         $preview = session('bulk_preview');
         if (!$preview) {
             return redirect()->route('cisterna.bulk')
-                            ->with('error', '❌ No hay datos pendientes de confirmar.');
+                            ->with('warning', 'No hay datos pendientes de confirmar.');
         }
 
         return view('cisterna.bulk_confirm', compact('preview'));
@@ -386,7 +394,8 @@ class CisternaController extends Controller
     {
         $user = Auth::user();
         if (!$user->isRoot() && !$user->isAdmin()) {
-            abort(403, 'No tienes permisos para realizar carga masiva');
+            return redirect()->route('cisterna.index')
+                ->with('warning', 'No tienes permisos para realizar carga masiva.');
         }
 
         $tempPath       = session('bulk_tempPath');
@@ -408,7 +417,7 @@ class CisternaController extends Controller
         if ($isImportAll || $postTruncado) {
             if (!$tempPath) {
                 return redirect()->route('cisterna.bulk')
-                    ->with('error', 'No hay archivo temporal para importar.');
+                    ->with('warning', 'No hay archivo temporal para importar.');
             }
 
             $fullPath   = storage_path('app/private/' . $tempPath);
@@ -436,7 +445,7 @@ class CisternaController extends Controller
                     continue;
                 }
 
-                $data = collect($filaEditada)->except(['_incluir', '_hoja', '_error'])->toArray();
+                $data = $this->onlyAllowedImportFields($filaEditada);
                 $data['GlobalGAP'] = !empty($filaEditada['GlobalGAP']);
                 $data['FDA']       = !empty($filaEditada['FDA']);
                 $data = $this->normalizeRequiredImportFields($data);
@@ -505,7 +514,7 @@ class CisternaController extends Controller
                 continue;
             }
 
-            $data = collect($fila)->except(['_incluir', '_hoja'])->toArray();
+            $data = $this->onlyAllowedImportFields($fila);
             $data['GlobalGAP'] = isset($fila['GlobalGAP']) ? (bool) $fila['GlobalGAP'] : false;
             $data['FDA']       = isset($fila['FDA'])       ? (bool) $fila['FDA']       : false;
 
@@ -534,12 +543,9 @@ class CisternaController extends Controller
     public function export(Request $request)
     {
         $query = Cisterna::query();
-        $year  = $request->input('year');
-        $yearValido = is_string($year) || is_numeric($year)
-            ? preg_match('/^\d{4}$/', (string) $year)
-            : false;
+        $year = $this->normalizeYearFilter($request->input('year'));
 
-        if ($request->filled('year') && $yearValido) {
+        if ($year !== null) {
             $query->where(function ($q) use ($year) {
                 $q->whereYear('FechaConsumoMG', $year)
                     ->orWhere(function ($q2) use ($year) {
@@ -559,8 +565,9 @@ class CisternaController extends Controller
             });
         }
 
-        if ($request->filled('fecha')) {
-            $query->whereDate('FechaConsumoMG', $request->fecha);
+        $fecha = $this->normalizeDateFilter($request->input('fecha'));
+        if ($fecha !== null) {
+            $query->whereDate('FechaConsumoMG', $fecha);
         }
 
         $cisternas = $query->orderByDesc('NumeroCisterna')->get();
@@ -574,8 +581,8 @@ class CisternaController extends Controller
     // ==================== DASHBOARD ====================
     public function dashboard(Request $request)
     {
-        $desde = $request->filled('desde') ? $request->desde : null;
-        $hasta = $request->filled('hasta') ? $request->hasta : null;
+        $desde = $this->normalizeDateFilter($request->input('desde'));
+        $hasta = $this->normalizeDateFilter($request->input('hasta'));
 
         $query = Cisterna::query();
 
@@ -601,7 +608,7 @@ class CisternaController extends Controller
                         ->where(function ($q) {
                             $q->whereNotNull('HoraRealConsumoL1')
                               ->orWhereNotNull('HoraRealConsumoL2')
-                              ->orWhereRaw('LOWER(Destino) LIKE ?', ['%tamarite de litera%']);
+                              ->orWhere('Destino', 'like', '%tamarite de litera%');
                         })
                         ->count();
         $pendientes = (clone $query)
@@ -609,7 +616,7 @@ class CisternaController extends Controller
                         ->where(function ($q) {
                             $q->whereNull('HoraRealConsumoL1')
                               ->whereNull('HoraRealConsumoL2')
-                              ->whereRaw('LOWER(Destino) NOT LIKE ?', ['%tamarite de litera%']);
+                              ->where('Destino', 'not like', '%tamarite de litera%');
                         })
                         ->count();
         $incidencias = (clone $query)->whereNotNull('Incidencias')
@@ -619,7 +626,7 @@ class CisternaController extends Controller
         $en_transito = Cisterna::whereNull('FechaEntradaMG')
                                 ->whereNull('HoraRealConsumoL1')
                                 ->whereNull('HoraRealConsumoL2')
-                                ->whereRaw('LOWER(Destino) NOT LIKE ?', ['%tamarite de litera%'])
+                                ->where('Destino', 'not like', '%tamarite de litera%')
                                 ->count();
         $recientes      = Cisterna::orderByDesc('IdCisterna')->take(5)->get();
         $hoy_cisternas  = Cisterna::whereDate('FechaConsumoMG', today())
@@ -630,7 +637,7 @@ class CisternaController extends Controller
                 ->orderByRaw('YEAR(COALESCE(FechaConsumoMG, created_at)) DESC')
                 ->pluck('ano');
 
-        $añoSeleccionado = $request->año;
+        $añoSeleccionado = $this->normalizeYearFilter($request->input('año'));
         $cisternasDelAño = collect();
 
         if ($añoSeleccionado) {
@@ -666,6 +673,36 @@ class CisternaController extends Controller
         return $data;
     }
 
+    private function normalizeYearFilter($value): ?int
+    {
+        if (!is_string($value) && !is_numeric($value)) {
+            return null;
+        }
+
+        $year = trim((string) $value);
+        if (!preg_match('/^\d{4}$/', $year)) {
+            return null;
+        }
+
+        $year = (int) $year;
+        return $year >= 2000 && $year <= 2100 ? $year : null;
+    }
+
+    private function normalizeDateFilter($value): ?string
+    {
+        if (!is_string($value) && !is_numeric($value)) {
+            return null;
+        }
+
+        $date = trim((string) $value);
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+            return null;
+        }
+
+        [$year, $month, $day] = array_map('intval', explode('-', $date));
+        return checkdate($month, $day, $year) ? $date : null;
+    }
+
     private function baseConsumptionDate(Cisterna $cisterna): string
     {
         if ($cisterna->FechaConsumoMG) {
@@ -696,6 +733,34 @@ class CisternaController extends Controller
         return $data;
     }
 
+    private function onlyAllowedImportFields(array $data): array
+    {
+        return collect($data)->only([
+            'OF',
+            'NumeroCisterna',
+            'Conductor',
+            'Telefono',
+            'Origen',
+            'Destino',
+            'Matricula',
+            'MatriculaCisterna',
+            'Transporte',
+            'FechaFabricacionHuelva',
+            'HoraSalida',
+            'FechaEntradaMG',
+            'HoraLlegadaEstimada',
+            'FechaConsumoMG',
+            'HoraEstimadaConsumoL1',
+            'HoraEstimadaConsumoL2',
+            'HoraRealConsumoL1',
+            'HoraRealConsumoL2',
+            'GlobalGAP',
+            'FDA',
+            'Observaciones',
+            'Incidencias',
+        ])->toArray();
+    }
+
     private function normalizeRequiredImportFields(array $data): array
     {
         foreach (['OF', 'NumeroCisterna'] as $key) {
@@ -722,7 +787,8 @@ class CisternaController extends Controller
     public function destroyAll()
     {
         if (!auth()->user()->isRoot() && !auth()->user()->isAdmin()) {
-            abort(403, 'No autorizado');
+            return redirect()->route('cisterna.index')
+                ->with('warning', 'No tienes permisos para eliminar todas las cisternas.');
         }
         Cisterna::truncate();
         return redirect()->route('cisterna.index')
