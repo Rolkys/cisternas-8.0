@@ -2,7 +2,7 @@
 
 /**
  * Servicio de exportacion de cisternas a formato Excel.
- * 
+ *
  * Genera archivos Excel con los datos de cisternas incluyendo:
  * - Formato profesional con cabecera estilizada
  * - Colores de estado para cada fila (incidencias, consumidas, pendientes)
@@ -65,8 +65,8 @@ class ExcelExportService
 
     /**
      * Exporta una coleccion de cisternas a un archivo Excel.
-     * 
-     * Aplica estilos segun el estado de cada cisterna:
+     *
+     * Aplica estilos según el estado de cada cisterna:
      * - Rojo: Tiene incidencias
      * - Verde: Ya ha sido consumida
      * - Azul: Consumo programado para hoy
@@ -108,7 +108,7 @@ class ExcelExportService
     }
 
     /**
-     * Escribe los datos de las cisternas y aplica colores segun estado.
+     * Escribe los datos de las cisternas y aplica colores según estado.
      *
      * @param \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet Hoja activa
      * @param Collection<int, Cisterna> $cisternas Coleccion de cisternas
@@ -126,7 +126,7 @@ class ExcelExportService
     }
 
     /**
-     * Escribe los datos de una cisterna en una fila especifica.
+     * Escribe los datos de una cisterna en una fila específica.
      *
      * @param \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet Hoja activa
      * @param int $fila Numero de fila
@@ -260,6 +260,7 @@ class ExcelExportService
      * @return string Ruta del archivo generado
      */
     private function generarArchivo(Spreadsheet $spreadsheet): string
+
     {
         $writer = new Xlsx($spreadsheet);
         $nombreArchivo = 'cisternas_' . now()->format(self::FORMATO_FECHA_ARCHIVO) . '.xlsx';

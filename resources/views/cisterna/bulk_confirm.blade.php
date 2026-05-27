@@ -171,7 +171,7 @@
                                             <input type="date"
                                                     name="filas[{{ $i }}][FechaConsumoMG]"
                                                     value="{{ isset($fila['FechaConsumoMG']) && $fila['FechaConsumoMG']
-                                                        ? \Carbon\Carbon::parse($fila['FechaConsumoMG'])->format('Y-m-d')
+                                                        ? \Carbon\Carbon::createFromFormat('Ymd H:i:s', $fila['FechaConsumoMG'])->format('Y-m-d')
                                                         : ''}}"
                                                     class="form-control form-control-sm"
                                                     style="min-width: 140px">
@@ -182,7 +182,7 @@
                                             <input type="datetime-local"
                                                    name="filas[{{ $i }}][FechaEntradaMG]"
                                                    value="{{ isset($fila['FechaEntradaMG']) && $fila['FechaEntradaMG']
-                                                ? \Carbon\Carbon::parse($fila['FechaEntradaMG'])->format('Y-m-d\TH:i')
+                                                ? \Carbon\Carbon::createFromFormat('Ymd H:i:s', $fila['FechaEntradaMG'])->format('Y-m-d\TH:i')
                                                 : '' }}"
                                                    class="form-control form-control-sm"
                                                    style="min-width:160px">
@@ -193,7 +193,7 @@
                                             <input type="time"
                                                     name="filas[{{ $i }}][HoraEstimadaConsumoL1]"
                                                     value="{{ !$esMoratalla && isset($fila['HoraEstimadaConsumoL1']) && $fila['HoraEstimadaConsumoL1']
-                                                        ? \Carbon\Carbon::parse($fila['HoraEstimadaConsumoL1'])->format('H:i')
+                                                        ? \Carbon\Carbon::createFromFormat('Ymd H:i:s', $fila['HoraEstimadaConsumoL1'])->format('H:i')
                                                          : '' }}"
                                                     class="form-control form-control-sm hec-11"
                                                     data-index="{{ $i }}"
@@ -205,7 +205,7 @@
                                             <input type="time"
                                                    name="filas[{{ $i }}][HoraEstimadaConsumoL2]"
                                                    value="{{ !$esMoratalla && isset($fila['HoraEstimadaConsumoL2']) && $fila['HoraEstimadaConsumoL2']
-                                                        ? \Carbon\Carbon::parse($fila['HoraEstimadaConsumoL2'])->format('H:i')
+                                                        ? \Carbon\Carbon::createFromFormat('Ymd H:i:s', $fila['HoraEstimadaConsumoL2'])->format('H:i')
                                                          : '' }}"
                                                    class="form-control form-control-sm hec-12"
                                                    data-index="{{ $i }}"

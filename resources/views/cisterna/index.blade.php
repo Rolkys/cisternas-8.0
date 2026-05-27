@@ -73,6 +73,15 @@
                 </button>
             @endif
 
+            {{-- AYUDA --}}
+            <button type="button"
+                    class="btn btn-outline-secondary w-100 btn-grid"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalAyuda">
+                <i class="bi bi-question-circle"></i>
+                <span class="d-none d-md-inline ms-1">Ayuda</span>
+            </button>
+
     </div>
 
 </div>
@@ -264,6 +273,8 @@
     <span><span class="legend-box" style="background:var(--row-futura)"></span>Futura</span>
     <span><span class="legend-box" style="background:var(--row-pendiente)"></span>Pendiente</span>
 </div>
+
+@include('cisterna.partials.modal-ayuda')
 
 {{-- Modal eliminacion total --}}
 @if(auth()->user()->isRoot())
